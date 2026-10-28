@@ -1,78 +1,44 @@
-# MMA3001 Project: Combined Cycle Power Plant Output Prediction
+
+"""
+MMA3001 Project: Combined Cycle Power Plant Output Prediction
+
+Description:
+    This program predicts electrical power output using Multiple Linear
+    Regression (MLR), Support Vector Regression (SVR) and Artificial
+    Neural Networks (ANN).
+
+    The workflow includes dataset validation, exploratory data analysis,
+    hyperparameter tuning, model comparison and independent testing.
+    Reusable functions are imported from main_model_functions.py.
+
+Outputs:
+    CSV files containing model performance and hyperparameter tuning results.
+    PNG figures showing correlations, predictions and residuals.
+
+Execution:
+    python main.py
+"""
 
 import time
 import warnings
+from pathlib import Path
+
 import matplotlib
 matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import pandas as pd
+
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPRegressor
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
 
-
-# ============================================================
-# Reusable Functions
-# ============================================================
-
-def evaluate_model(y_true, y_pred):
-    """
-    The evaluate_model function evaluates the accuracy of a regression
-    model by comparing actual and predicted electrical power output.
-
-    Args:
-        y_true: Vector containing actual electrical power output values (MW).
-        y_pred: Vector containing predicted electrical power output values (MW).
-
-    Returns:
-        mae: Mean Absolute Error (MW), measuring average absolute error.
-        rmse: Root Mean Squared Error (MW), giving greater weight to larger prediction errors.
-        r2: Coefficient of determination, measuring how well the model explains variation in electrical power output.
-    """
-    mae = mean_absolute_error(y_true, y_pred)
-    rmse = mean_squared_error(y_true, y_pred) ** 0.5
-    r2 = r2_score(y_true, y_pred)
-
-    return mae, rmse, r2
-
-
-def make_ann(hidden_layers, alpha, learning_rate):
-    """
-    The make_ann function creates an Artificial Neural Network regression
-    model with the specified hyperparameters and feature standardisation.
-
-    Args:
-        hidden_layers: Tuple specifying the number of neurons in each hidden layer of the neural network.
-        alpha: L2 regularisation parameter used during ANN training.
-        learning_rate: Initial learning rate used by the Adam optimiser.
-
-    Returns:
-        ann_model: Scikit-learn pipeline containing a StandardScaler and an MLPRegressor with the selected hyperparameters.
-    """
-    ann_model = make_pipeline(
-        StandardScaler(),
-        MLPRegressor(
-            hidden_layer_sizes=hidden_layers,
-            activation="relu",
-            solver="adam",
-            alpha=alpha,
-            learning_rate_init=learning_rate,
-            max_iter=2500,
-            early_stopping=True,
-            validation_fraction=0.15,
-            n_iter_no_change=35,
-            tol=0.00001,
-            random_state=42
-        )
-    )
-
-    return ann_model
-
+from main_model_functions import (
+    load_and_clean_data,
+    split_dataset,
+    evaluate_model,
+    make_svr,
+    make_ann
+)
 
 # ============================================================
 # Project Heading
@@ -82,19 +48,14 @@ print("=" * 65)
 print("       MMA3001 | POWER PLANT OUTPUT PREDICTION")
 print("=" * 65)
 
-
 # ============================================================
 # 1. Load and Inspect Dataset
 # ============================================================
 
-df = pd.read_excel("data/Folds5x2_pp.xlsx", sheet_name=0)
+PROJECT_DIR = Path(__file__).resolve().parent
+dataset_path = PROJECT_DIR / "data" / "Folds5x2_pp.xlsx"
 
-original_samples = len(df)
-missing_values = df.isnull().sum().sum()
-duplicate_count = df.duplicated().sum()
-
-# Remove exact duplicate observations.
-df = df.drop_duplicates().reset_index(drop=True)
+df, original_samples, duplicate_count, missing_values = (load_and_clean_data(dataset_path))
 
 print("\n[1] DATASET")
 print("-" * 65)
@@ -102,9 +63,8 @@ print(f"Original samples       : {original_samples:,}")
 print(f"Duplicate rows removed : {duplicate_count:,}")
 print(f"Cleaned samples        : {len(df):,}")
 print(f"Missing values         : {missing_values}")
-print(f"Input features         : AT, V, AP, RH")
-print(f"Target variable        : PE (MW)")
-
+print("Input features         : AT, V, AP, RH")
+print("Target variable        : PE (MW)")
 
 # ============================================================
 # 2. Exploratory Data Analysis
@@ -131,7 +91,7 @@ fig.colorbar(heatmap, ax=ax, label="Pearson correlation")
 ax.set_title("Correlation Between Power Plant Variables")
 
 fig.tight_layout()
-fig.savefig("correlation_heatmap.png", dpi=300, bbox_inches="tight")
+fig.savefig(PROJECT_DIR / "correlation_heatmap.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 
 print("\n[2] EXPLORATORY DATA ANALYSIS")
@@ -151,11 +111,7 @@ print("\nCorrelation heatmap    : correlation_heatmap.png")
 X = df[["AT", "V", "AP", "RH"]]
 y = df["PE"]
 
-# Reserve 15% of observations for independent final testing.
-X_temp, X_test, y_temp, y_test = train_test_split(X,y,test_size=0.15,random_state=42)
-
-# Divide the remaining observations into training and validation sets.
-X_train, X_val, y_train, y_val = train_test_split(X_temp,y_temp,test_size=0.15 / 0.85,random_state=42)
+X_temp, X_train, X_val, X_test, y_temp, y_train, y_val, y_test = split_dataset(df)
 
 print("\n[3] DATA SPLIT")
 print("-" * 65)
@@ -194,7 +150,7 @@ print(f"Prediction time        : {mlr_predict_time:.6f} s")
 print("\nRegression coefficients:")
 print(f"  Intercept : {mlr_model.intercept_:.4f}")
 
-for feature, coefficient in zip(X.columns, mlr_model.coef_):
+for feature, coefficient in zip(X_train.columns, mlr_model.coef_):
     print(f"  {feature:<3}       : {coefficient:+.4f}")
 
 
@@ -224,10 +180,7 @@ for c in c_values:
         for gamma in gamma_values:
 
             # Standardise features before applying the RBF kernel.
-            svr_model = make_pipeline(
-                StandardScaler(),
-                SVR(kernel="rbf", C=c, epsilon=epsilon, gamma=gamma)
-            )
+            svr_model = make_svr(c, epsilon, gamma)
 
             # Train the SVR model.
             start_time = time.perf_counter()
@@ -271,7 +224,7 @@ svr_tuning_time = time.perf_counter() - svr_tuning_start
 
 # Save all configurations for analysis and documentation.
 svr_results_df = pd.DataFrame(svr_results).sort_values("RMSE")
-svr_results_df.to_csv("svr_tuning_results.csv", index=False)
+svr_results_df.to_csv(PROJECT_DIR / "svr_tuning_results.csv", index=False)
 
 best_svr_mae, best_svr_rmse, best_svr_r2 = evaluate_model(y_val, best_svr_model.predict(X_val))
 
@@ -387,7 +340,7 @@ ann_tuning_time = time.perf_counter() - ann_tuning_start
 
 # Save all ANN configurations for analysis and documentation.
 ann_results_df = pd.DataFrame(ann_results).sort_values("Val_RMSE")
-ann_results_df.to_csv("ann_tuning_results.csv", index=False)
+ann_results_df.to_csv(PROJECT_DIR / "ann_tuning_results.csv", index=False)
 
 best_ann_row = ann_results_df.iloc[0]
 
@@ -429,5 +382,114 @@ print(comparison_df.to_string(index=False, float_format=lambda value: f"{value:.
 best_model_name = comparison_df.iloc[0]["Model"]
 
 print(f"\nBest validation model  : {best_model_name}")
-print("Final test evaluation  : Not performed")
+print("=" * 65)
+
+# ============================================================
+# 7. Final Test Evaluation
+# ============================================================
+
+# Refit all three models on the combined training and validation data.
+# The independent test set is used only for final performance evaluation.
+final_models = {
+    "MLR": LinearRegression(),
+    "SVR": make_svr(best_svr_settings[0], best_svr_settings[1], best_svr_settings[2]),
+    "ANN": make_ann(hidden_layers=best_ann_settings[0], alpha=best_ann_settings[1], learning_rate=best_ann_settings[2])
+}
+
+final_results = []
+final_predictions = {}
+
+print("\n[7] FINAL TEST EVALUATION")
+print("-" * 65)
+print(f"Final training samples : {len(X_temp):,} (85%)")
+print(f"Independent test samples: {len(X_test):,} (15%)")
+
+for model_name, model in final_models.items():
+    start_time = time.perf_counter()
+    model.fit(X_temp, y_temp)
+    train_time = time.perf_counter() - start_time
+
+    start_time = time.perf_counter()
+    test_pred = model.predict(X_test)
+    predict_time = time.perf_counter() - start_time
+
+    mae, rmse, r2 = evaluate_model(y_test, test_pred)
+    final_predictions[model_name] = test_pred
+    final_results.append({
+        "Model": model_name,
+        "MAE (MW)": mae,
+        "RMSE (MW)": rmse,
+        "R2": r2,
+        "Train Time (s)": train_time,
+        "Predict Time (s)": predict_time
+    })
+    print(f"{model_name:<3} | MAE: {mae:.4f} MW | RMSE: {rmse:.4f} MW | R²: {r2:.4f}")
+
+final_results_df = pd.DataFrame(final_results).sort_values("RMSE (MW)")
+final_results_df.to_csv(PROJECT_DIR / "model_performance_results.csv", index=False)
+
+print("\n" + "=" * 65)
+print("                     FINAL TEST COMPARISON")
+print("=" * 65)
+print(final_results_df.to_string(index=False, float_format=lambda value: f"{value:.4f}"))
+print(f"\nSelected model         : {best_model_name} (based on validation RMSE)")
+print(f"Lowest test RMSE       : {final_results_df.iloc[0]['Model']}")
+print("Detailed results       : model_performance_results.csv")
+
+
+# ============================================================
+# 8. Final Test Performance Visualisation
+# ============================================================
+
+print("\n[8] FINAL TEST VISUALISATION")
+print("-" * 65)
+
+# Compare final test RMSE across the three regression models.
+fig, ax = plt.subplots(figsize=(7, 5))
+model_colors = {"MLR": "#4472C4", "SVR": "#ED7D31", "ANN": "#70AD47"}
+
+ax.bar(final_results_df["Model"], final_results_df["RMSE (MW)"], color=[model_colors[model] for model in final_results_df["Model"]])
+ax.set_ylabel("Test RMSE (MW)")
+ax.set_xlabel("Regression Model")
+ax.set_title("Final Test RMSE Comparison")
+ax.set_ylim(0, final_results_df["RMSE (MW)"].max() * 1.2)
+for i, rmse in enumerate(final_results_df["RMSE (MW)"]):
+    ax.text(i, rmse, f"{rmse:.3f}", ha="center", va="bottom")
+fig.tight_layout()
+fig.savefig(PROJECT_DIR / "model_rmse_comparison.png", dpi=300, bbox_inches="tight")
+plt.close(fig)
+print("RMSE comparison        : model_rmse_comparison.png")
+
+# Plot actual versus predicted output for each model.
+fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharex=True, sharey=True)
+minimum = min(y_test.min(), *(pred.min() for pred in final_predictions.values()))
+maximum = max(y_test.max(), *(pred.max() for pred in final_predictions.values()))
+for ax, (model_name, prediction) in zip(axes, final_predictions.items()):
+    ax.scatter(y_test, prediction, s=10, alpha=0.35)
+    ax.plot([minimum, maximum], [minimum, maximum], "r--", linewidth=1.5)
+    ax.set_title(model_name)
+    ax.set_xlabel("Actual PE (MW)")
+    ax.set_ylabel("Predicted PE (MW)")
+    ax.set_xlim(minimum, maximum)
+    ax.set_ylim(minimum, maximum)
+fig.suptitle("Actual vs Predicted Power Output (Final Test Set)")
+fig.tight_layout()
+fig.savefig(PROJECT_DIR / "model_actual_vs_predicted.png", dpi=300, bbox_inches="tight")
+plt.close(fig)
+print("Actual vs predicted    : model_actual_vs_predicted.png")
+
+# Residual = actual output minus predicted output.
+fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+for ax, (model_name, prediction) in zip(axes, final_predictions.items()):
+    residuals = y_test.to_numpy() - prediction
+    ax.scatter(prediction, residuals, s=10, alpha=0.35)
+    ax.axhline(0, color="red", linestyle="--", linewidth=1.5)
+    ax.set_title(model_name)
+    ax.set_xlabel("Predicted PE (MW)")
+    ax.set_ylabel("Residual (MW)")
+fig.suptitle("Residuals of Regression Models (Final Test Set)")
+fig.tight_layout()
+fig.savefig(PROJECT_DIR / "model_residual_plots.png", dpi=300, bbox_inches="tight")
+plt.close(fig)
+print("Residual plots         : model_residual_plots.png")
 print("=" * 65)
