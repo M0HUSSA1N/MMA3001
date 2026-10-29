@@ -1,4 +1,3 @@
-
 """
 MMA3001 Project: Combined Cycle Power Plant Output Prediction
 
@@ -11,9 +10,17 @@ Description:
     hyperparameter tuning, model comparison and independent testing.
     Reusable functions are imported from main_model_functions.py.
 
+    Additional analyses investigate computational complexity, approximate
+    floating-point operations, accuracy versus computational cost,
+    prediction errors across ambient-temperature regions, and the
+    physical plausibility of model predictions.
+
 Outputs:
-    CSV files containing model performance and hyperparameter tuning results.
-    PNG figures showing correlations, predictions and residuals.
+    CSV files containing hyperparameter tuning results, model performance,
+    computational cost estimates and temperature-region evaluation.
+
+    PNG figures showing correlations, model predictions, residuals,
+    accuracy-cost trade-offs and temperature-dependent model behaviour.
 
 Execution:
     python main.py
@@ -28,6 +35,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LinearRegression
@@ -436,7 +444,6 @@ print(f"\nSelected model         : {best_model_name} (based on validation RMSE)"
 print(f"Lowest test RMSE       : {final_results_df.iloc[0]['Model']}")
 print("Detailed results       : model_performance_results.csv")
 
-
 # ============================================================
 # 8. Final Test Performance Visualisation
 # ============================================================
@@ -492,4 +499,411 @@ fig.tight_layout()
 fig.savefig(PROJECT_DIR / "model_residual_plots.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 print("Residual plots         : model_residual_plots.png")
+print("=" * 65)
+
+# ============================================================
+# 9. Computational Efficiency and Accuracy Trade-off
+# ============================================================
+
+print("\n[9] COMPUTATIONAL EFFICIENCY AND ACCURACY TRADE-OFF")
+print("-" * 65)
+
+# Number of input features used by each regression model.
+n_features = X_test.shape[1]
+
+# Retrieve the fitted ANN architecture and parameter counts.
+fitted_ann = final_models["ANN"].named_steps["mlpregressor"]
+
+ann_weights = sum(weights.size for weights in fitted_ann.coefs_)
+ann_biases = sum(biases.size for biases in fitted_ann.intercepts_)
+ann_parameters = ann_weights + ann_biases
+
+# Retrieve the number of support vectors in the final fitted SVR.
+fitted_svr = final_models["SVR"].named_steps["svr"]
+svr_support_vectors = len(fitted_svr.support_)
+
+# Estimate basic floating-point arithmetic per prediction.
+# MLR: one multiplication and one addition per input feature.
+mlr_flops = 2 * n_features
+
+# ANN: approximately one multiplication and one addition per weight.
+ann_flops = 2 * ann_weights
+
+# RBF-SVR: distance, kernel scaling and weighted summation.
+# Exponential evaluations are counted separately.
+svr_flops = svr_support_vectors * (3 * n_features + 2)
+svr_exponentials = svr_support_vectors
+
+flop_estimates = {
+    "MLR": mlr_flops,
+    "ANN": ann_flops,
+    "SVR": svr_flops
+}
+
+# Combine computational estimates with measured test performance.
+cost_results = []
+
+for model_name in ["MLR", "ANN", "SVR"]:
+
+    model_row = final_results_df[
+        final_results_df["Model"] == model_name
+    ].iloc[0]
+
+    predict_time = model_row["Predict Time (s)"]
+
+    cost_results.append({
+        "Model": model_name,
+        "Test MAE (MW)": model_row["MAE (MW)"],
+        "Test RMSE (MW)": model_row["RMSE (MW)"],
+        "Test R2": model_row["R2"],
+        "Train Time (s)": model_row["Train Time (s)"],
+        "Predict Time (s)": predict_time,
+        "Amortized Predict Time (ms/sample)": (
+            predict_time * 1000 / len(X_test)
+        ),
+        "Approx Basic FLOPs per Prediction": flop_estimates[model_name]
+    })
+
+cost_df = pd.DataFrame(cost_results)
+
+cost_df.to_csv(PROJECT_DIR / "computational_cost_analysis.csv",index=False)
+
+print("Estimated arithmetic operations per prediction:")
+print(f"MLR                   : {mlr_flops:,}")
+print(f"ANN                   : {ann_flops:,}")
+print(f"SVR                   : {svr_flops:,}")
+
+print(f"\nANN trainable parameters : {ann_parameters:,}")
+print(f"ANN weights              : {ann_weights:,}")
+print(f"ANN biases               : {ann_biases:,}")
+
+print(f"\nFinal SVR support vectors: {svr_support_vectors:,}")
+print(f"SVR exponentials/sample  : {svr_exponentials:,}")
+
+print("\nAccuracy and computational cost:")
+print(cost_df.to_string(index=False, float_format=lambda value: f"{value:.6f}"))
+
+# Calculate the accuracy improvement and prediction time trade-off.
+cost_indexed = cost_df.set_index("Model")
+
+mlr_rmse = cost_indexed.loc["MLR", "Test RMSE (MW)"]
+ann_rmse = cost_indexed.loc["ANN", "Test RMSE (MW)"]
+svr_rmse = cost_indexed.loc["SVR", "Test RMSE (MW)"]
+
+ann_time = cost_indexed.loc["ANN", "Predict Time (s)"]
+svr_time = cost_indexed.loc["SVR", "Predict Time (s)"]
+
+svr_improvement_mlr = (mlr_rmse - svr_rmse) / mlr_rmse * 100
+svr_improvement_ann = (ann_rmse - svr_rmse) / ann_rmse * 100
+
+print(f"\nSVR RMSE improvement over MLR : {svr_improvement_mlr:.2f}%")
+print(f"SVR RMSE improvement over ANN : {svr_improvement_ann:.2f}%")
+
+if ann_time > 0:
+    print(f"SVR / ANN prediction time ratio: {svr_time / ann_time:.1f}x")
+
+# Visualise the relationship between prediction accuracy and runtime.
+fig, ax = plt.subplots(figsize=(8, 5))
+
+comparison_colors = {
+    "MLR": "#4472C4",
+    "SVR": "#ED7D31",
+    "ANN": "#70AD47"
+}
+
+for _, row in cost_df.iterrows():
+
+    model_name = row["Model"]
+    predict_time_ms = row["Predict Time (s)"] * 1000
+    rmse = row["Test RMSE (MW)"]
+
+    ax.scatter(
+        predict_time_ms,
+        rmse,
+        color=comparison_colors[model_name],
+        s=100,
+        label=model_name
+    )
+
+    ax.annotate(
+        model_name,
+        (predict_time_ms, rmse),
+        xytext=(7, 5),
+        textcoords="offset points"
+    )
+
+ax.set_xscale("log")
+ax.set_xlabel("Prediction Time for Test Batch (ms, logarithmic scale)")
+ax.set_ylabel("Test RMSE (MW)")
+ax.set_title("Prediction Accuracy vs Computational Cost")
+ax.grid(True, alpha=0.3)
+ax.legend()
+
+fig.tight_layout()
+
+fig.savefig(
+    PROJECT_DIR / "accuracy_vs_computational_cost.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close(fig)
+
+print("\nDetailed results       : computational_cost_analysis.csv")
+print("Accuracy-cost plot     : accuracy_vs_computational_cost.png")
+print("Note: FLOP estimates exclude scaling and nonlinear function costs.")
+print("Note: Runtime values are from a single measurement per model.")
+print("=" * 65)
+
+
+# ============================================================
+# 10. Operating-Region Performance and Physical Plausibility
+# ============================================================
+
+print("\n[10] OPERATING-REGION PERFORMANCE AND PHYSICAL PLAUSIBILITY")
+print("-" * 65)
+
+# ============================================================
+# 10.1 Temperature-Region Performance and Data Coverage
+# ============================================================
+
+# Define three equal-width temperature regions using training data only.
+# This avoids using test data to determine the region boundaries.
+temperature_min = X_train["AT"].min()
+temperature_max = X_train["AT"].max()
+
+temperature_step = (temperature_max - temperature_min) / 3
+
+low_boundary = temperature_min + temperature_step
+high_boundary = temperature_min + 2 * temperature_step
+
+print("\nTemperature-region boundaries:")
+print(f"Low                  : AT <= {low_boundary:.2f} °C")
+print(f"Moderate             : {low_boundary:.2f} < AT <= {high_boundary:.2f} °C")
+print(f"High                 : AT > {high_boundary:.2f} °C")
+
+# Count observations in each region using training and test data.
+train_temperature = X_train["AT"].to_numpy()
+test_temperature = X_test["AT"].to_numpy()
+
+train_masks = {
+    "Low": train_temperature <= low_boundary,
+    "Moderate": (
+        (train_temperature > low_boundary) &
+        (train_temperature <= high_boundary)
+    ),
+    "High": train_temperature > high_boundary
+}
+
+test_masks = {
+    "Low": test_temperature <= low_boundary,
+    "Moderate": (
+        (test_temperature > low_boundary) &
+        (test_temperature <= high_boundary)
+    ),
+    "High": test_temperature > high_boundary
+}
+
+region_names = ["Low", "Moderate", "High"]
+model_names = ["MLR", "ANN", "SVR"]
+
+regional_results = []
+
+for region in region_names:
+
+    train_count = int(train_masks[region].sum())
+    test_mask = test_masks[region]
+    test_count = int(test_mask.sum())
+
+    print(f"\n{region.upper()} TEMPERATURE REGION")
+    print(f"Training observations : {train_count:,}")
+    print(f"Testing observations  : {test_count:,}")
+
+    for model_name in model_names:
+
+        if test_count == 0:
+            mae = np.nan
+            rmse = np.nan
+        else:
+            # Evaluate the existing final predictions in this region.
+            actual = y_test.to_numpy()[test_mask]
+            predicted = np.asarray(
+                final_predictions[model_name]
+            )[test_mask]
+
+            mae, rmse, _ = evaluate_model(actual, predicted)
+
+        regional_results.append({
+            "Temperature Region": region,
+            "Model": model_name,
+            "Training Samples": train_count,
+            "Testing Samples": test_count,
+            "Test MAE (MW)": mae,
+            "Test RMSE (MW)": rmse
+        })
+
+        print(f"{model_name:<3} | MAE: {mae:.4f} MW | RMSE: {rmse:.4f} MW")
+
+regional_df = pd.DataFrame(regional_results)
+
+regional_df.to_csv(PROJECT_DIR / "temperature_region_performance.csv",index=False)
+
+# Visualise RMSE differences across temperature regions.
+fig, ax = plt.subplots(figsize=(9, 5))
+
+region_positions = np.arange(len(region_names))
+bar_width = 0.25
+
+model_colors = {
+    "MLR": "#4472C4",
+    "SVR": "#ED7D31",
+    "ANN": "#70AD47"
+}
+
+for i, model_name in enumerate(model_names):
+
+    model_data = regional_df[
+        regional_df["Model"] == model_name
+    ].set_index("Temperature Region")
+
+    rmse_values = [
+        model_data.loc[region, "Test RMSE (MW)"]
+        for region in region_names
+    ]
+
+    ax.bar(
+        region_positions + (i - 1) * bar_width,
+        rmse_values,
+        width=bar_width,
+        label=model_name,
+        color=model_colors[model_name]
+    )
+
+# Display the sample count beneath each region.
+region_labels = []
+
+for region in region_names:
+    sample_count = int(test_masks[region].sum())
+    region_labels.append(f"{region}\n(n={sample_count})")
+
+ax.set_xticks(region_positions)
+ax.set_xticklabels(region_labels)
+
+ax.set_xlabel("Ambient Temperature Region")
+ax.set_ylabel("Test RMSE (MW)")
+ax.set_title("Model Prediction Error Across Temperature Regions")
+ax.legend()
+ax.grid(axis="y", alpha=0.3)
+
+fig.tight_layout()
+
+fig.savefig(
+    PROJECT_DIR / "temperature_region_rmse.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close(fig)
+
+# ============================================================
+# 10.2 Physical Plausibility of Predicted Power Output
+# ============================================================
+
+print("\n[10.2] PHYSICAL PLAUSIBILITY")
+print("-" * 65)
+
+# Use the development dataset to establish the observed PE range.
+# Predictions outside this range warrant inspection but are not
+# automatically physically impossible.
+pe_min = y_temp.min()
+pe_max = y_temp.max()
+
+print(f"Development PE range : {pe_min:.2f} to {pe_max:.2f} MW")
+
+for model_name in model_names:
+
+    predictions = np.asarray(final_predictions[model_name])
+
+    outside_range = int((
+        (predictions < pe_min) |
+        (predictions > pe_max)
+    ).sum())
+
+    percentage = outside_range / len(predictions) * 100
+
+    print(
+        f"{model_name:<3} | Predictions outside range: "
+        f"{outside_range:,} ({percentage:.2f}%)"
+    )
+
+# Investigate how predicted power output responds to temperature.
+# Hold V, AP and RH constant at their training-set median values.
+# This is a sensitivity check, not a causal thermodynamic simulation.
+reference_inputs = X_train.median()
+
+temperature_values = np.linspace(
+    X_train["AT"].quantile(0.05),
+    X_train["AT"].quantile(0.95),
+    80
+)
+
+sweep_inputs = pd.DataFrame({
+    column: np.full(
+        len(temperature_values),
+        float(reference_inputs[column])
+    )
+    for column in X_train.columns
+})
+
+sweep_inputs["AT"] = temperature_values
+
+fig, ax = plt.subplots(figsize=(8, 5))
+
+print("\nPredicted response to increasing ambient temperature:")
+
+for model_name in model_names:
+
+    model = final_models[model_name]
+    sweep_predictions = model.predict(sweep_inputs)
+
+    # Positive changes indicate local increases in predicted output.
+    increasing_steps = int(np.sum(np.diff(sweep_predictions) > 0))
+
+    total_change = (sweep_predictions[-1] - sweep_predictions[0])
+
+    print(
+        f"{model_name:<3} | Overall PE change: "
+        f"{total_change:+.3f} MW | "
+        f"Increasing intervals: {increasing_steps}"
+    )
+
+    ax.plot(
+        temperature_values,
+        sweep_predictions,
+        label=model_name,
+        color=model_colors[model_name],
+        linewidth=2
+    )
+
+ax.set_xlabel("Ambient Temperature (°C)")
+ax.set_ylabel("Predicted Electrical Power Output (MW)")
+ax.set_title("Predicted Power Output Response to Ambient Temperature")
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+fig.tight_layout()
+
+fig.savefig(
+    PROJECT_DIR / "temperature_response_check.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close(fig)
+
+print("\nDetailed results       : temperature_region_performance.csv")
+print("Regional RMSE plot     : temperature_region_rmse.png")
+print("Temperature response   : temperature_response_check.png")
+print("Note: Temperature sweeps hold other variables at training medians.")
+print("Note: Such input combinations may not represent actual operating states.")
 print("=" * 65)
