@@ -40,7 +40,7 @@ from main_model_functions import (
 
 PROJECT_DIR = Path(__file__).resolve().parent
 DATA_FILE = PROJECT_DIR / "data" / "Folds5x2_pp.xlsx"
-RESULTS_FILE = PROJECT_DIR / "model_performance_results.csv"
+RESULTS_FILE = PROJECT_DIR / "results" / "model_performance_results.csv"
 
 FEATURES = ["AT", "V", "AP", "RH"]
 TARGET = "PE"

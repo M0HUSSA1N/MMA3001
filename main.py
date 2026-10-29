@@ -61,6 +61,12 @@ print("=" * 65)
 # ============================================================
 
 PROJECT_DIR = Path(__file__).resolve().parent
+RESULTS_DIR = PROJECT_DIR / "results"
+FIGURES_DIR = PROJECT_DIR / "figures"
+
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
 dataset_path = PROJECT_DIR / "data" / "Folds5x2_pp.xlsx"
 
 df, original_samples, duplicate_count, missing_values = (load_and_clean_data(dataset_path))
@@ -99,7 +105,7 @@ fig.colorbar(heatmap, ax=ax, label="Pearson correlation")
 ax.set_title("Correlation Between Power Plant Variables")
 
 fig.tight_layout()
-fig.savefig(PROJECT_DIR / "correlation_heatmap.png", dpi=300, bbox_inches="tight")
+fig.savefig(FIGURES_DIR / "correlation_heatmap.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 
 print("\n[2] EXPLORATORY DATA ANALYSIS")
@@ -232,7 +238,7 @@ svr_tuning_time = time.perf_counter() - svr_tuning_start
 
 # Save all configurations for analysis and documentation.
 svr_results_df = pd.DataFrame(svr_results).sort_values("RMSE")
-svr_results_df.to_csv(PROJECT_DIR / "svr_tuning_results.csv", index=False)
+svr_results_df.to_csv(RESULTS_DIR / "svr_tuning_results.csv", index=False)
 
 best_svr_mae, best_svr_rmse, best_svr_r2 = evaluate_model(y_val, best_svr_model.predict(X_val))
 
@@ -348,7 +354,7 @@ ann_tuning_time = time.perf_counter() - ann_tuning_start
 
 # Save all ANN configurations for analysis and documentation.
 ann_results_df = pd.DataFrame(ann_results).sort_values("Val_RMSE")
-ann_results_df.to_csv(PROJECT_DIR / "ann_tuning_results.csv", index=False)
+ann_results_df.to_csv(RESULTS_DIR / "ann_tuning_results.csv", index=False)
 
 best_ann_row = ann_results_df.iloc[0]
 
@@ -434,7 +440,7 @@ for model_name, model in final_models.items():
     print(f"{model_name:<3} | MAE: {mae:.4f} MW | RMSE: {rmse:.4f} MW | R²: {r2:.4f}")
 
 final_results_df = pd.DataFrame(final_results).sort_values("RMSE (MW)")
-final_results_df.to_csv(PROJECT_DIR / "model_performance_results.csv", index=False)
+final_results_df.to_csv(RESULTS_DIR / "model_performance_results.csv", index=False)
 
 print("\n" + "=" * 65)
 print("                     FINAL TEST COMPARISON")
@@ -463,7 +469,7 @@ ax.set_ylim(0, final_results_df["RMSE (MW)"].max() * 1.2)
 for i, rmse in enumerate(final_results_df["RMSE (MW)"]):
     ax.text(i, rmse, f"{rmse:.3f}", ha="center", va="bottom")
 fig.tight_layout()
-fig.savefig(PROJECT_DIR / "model_rmse_comparison.png", dpi=300, bbox_inches="tight")
+fig.savefig(FIGURES_DIR / "model_rmse_comparison.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 print("RMSE comparison        : model_rmse_comparison.png")
 
@@ -481,7 +487,7 @@ for ax, (model_name, prediction) in zip(axes, final_predictions.items()):
     ax.set_ylim(minimum, maximum)
 fig.suptitle("Actual vs Predicted Power Output (Final Test Set)")
 fig.tight_layout()
-fig.savefig(PROJECT_DIR / "model_actual_vs_predicted.png", dpi=300, bbox_inches="tight")
+fig.savefig(FIGURES_DIR / "model_actual_vs_predicted.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 print("Actual vs predicted    : model_actual_vs_predicted.png")
 
@@ -496,7 +502,7 @@ for ax, (model_name, prediction) in zip(axes, final_predictions.items()):
     ax.set_ylabel("Residual (MW)")
 fig.suptitle("Residuals of Regression Models (Final Test Set)")
 fig.tight_layout()
-fig.savefig(PROJECT_DIR / "model_residual_plots.png", dpi=300, bbox_inches="tight")
+fig.savefig(FIGURES_DIR / "model_residual_plots.png", dpi=300, bbox_inches="tight")
 plt.close(fig)
 print("Residual plots         : model_residual_plots.png")
 print("=" * 65)
@@ -566,7 +572,7 @@ for model_name in ["MLR", "ANN", "SVR"]:
 
 cost_df = pd.DataFrame(cost_results)
 
-cost_df.to_csv(PROJECT_DIR / "computational_cost_analysis.csv",index=False)
+cost_df.to_csv(RESULTS_DIR / "computational_cost_analysis.csv",index=False)
 
 print("Estimated arithmetic operations per prediction:")
 print(f"MLR                   : {mlr_flops:,}")
@@ -642,7 +648,7 @@ ax.legend()
 fig.tight_layout()
 
 fig.savefig(
-    PROJECT_DIR / "accuracy_vs_computational_cost.png",
+    FIGURES_DIR / "accuracy_vs_computational_cost.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -746,7 +752,7 @@ for region in region_names:
 
 regional_df = pd.DataFrame(regional_results)
 
-regional_df.to_csv(PROJECT_DIR / "temperature_region_performance.csv",index=False)
+regional_df.to_csv(RESULTS_DIR / "temperature_region_performance.csv",index=False)
 
 # Visualise RMSE differences across temperature regions.
 fig, ax = plt.subplots(figsize=(9, 5))
@@ -798,7 +804,7 @@ ax.grid(axis="y", alpha=0.3)
 fig.tight_layout()
 
 fig.savefig(
-    PROJECT_DIR / "temperature_region_rmse.png",
+    FIGURES_DIR / "temperature_region_rmse.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -894,7 +900,7 @@ ax.grid(True, alpha=0.3)
 fig.tight_layout()
 
 fig.savefig(
-    PROJECT_DIR / "temperature_response_check.png",
+    FIGURES_DIR / "temperature_response_check.png",
     dpi=300,
     bbox_inches="tight"
 )
