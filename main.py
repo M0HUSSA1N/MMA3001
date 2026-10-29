@@ -28,6 +28,7 @@ Execution:
 
 import time
 import warnings
+import statistics
 from pathlib import Path
 
 import matplotlib
@@ -173,9 +174,9 @@ for feature, coefficient in zip(X_train.columns, mlr_model.coef_):
 # ============================================================
 
 # Hyperparameters investigated using validation RMSE.
-c_values = [1, 10, 100]
-epsilon_values = [0.1, 1.0]
-gamma_values = [0.01, 0.1, 0.3, "scale"]
+c_values = [1, 10, 100, 200]
+epsilon_values = [0.1, 1.0, 1.5]
+gamma_values = [0.01, 0.1, 0.3, 0.5, "scale"]
 
 svr_results = []
 
@@ -267,9 +268,9 @@ print("Detailed results       : svr_tuning_results.csv")
 # ============================================================
 
 # Compare architecture, regularisation and learning rate.
-hidden_layer_options = [(20,), (50,), (50, 25)]
-alpha_values = [0.0001, 0.01]
-learning_rates = [0.001, 0.01]
+hidden_layer_options = [(20,), (50,), (50, 25), (75, 25)]
+alpha_values = [0.0001, 0.01, 0.1]
+learning_rates = [0.0005, 0.001, 0.01]
 
 ann_results = []
 
@@ -423,9 +424,18 @@ for model_name, model in final_models.items():
     model.fit(X_temp, y_temp)
     train_time = time.perf_counter() - start_time
 
-    start_time = time.perf_counter()
+    # Warm up prediction and retain outputs for accuracy evaluation.
     test_pred = model.predict(X_test)
-    predict_time = time.perf_counter() - start_time
+
+    # Measure prediction time over 20 repetitions.
+    prediction_times = []
+
+    for _ in range(20):
+        start_time = time.perf_counter()
+        model.predict(X_test)
+        prediction_times.append(time.perf_counter() - start_time)
+
+    predict_time = statistics.median(prediction_times)
 
     mae, rmse, r2 = evaluate_model(y_test, test_pred)
     final_predictions[model_name] = test_pred
@@ -438,6 +448,15 @@ for model_name, model in final_models.items():
         "Predict Time (s)": predict_time
     })
     print(f"{model_name:<3} | MAE: {mae:.4f} MW | RMSE: {rmse:.4f} MW | R²: {r2:.4f}")
+
+# Display the coefficients of the final MLR model fitted on 85% of the dataset.
+final_mlr = final_models["MLR"]
+
+print("\nFinal MLR coefficients (training + validation):")
+print(f"Intercept : {final_mlr.intercept_:.4f}")
+
+for feature, coefficient in zip(X.columns, final_mlr.coef_):
+    print(f"{feature:<3}       : {coefficient:+.4f}")
 
 final_results_df = pd.DataFrame(final_results).sort_values("RMSE (MW)")
 final_results_df.to_csv(RESULTS_DIR / "model_performance_results.csv", index=False)
@@ -658,7 +677,7 @@ plt.close(fig)
 print("\nDetailed results       : computational_cost_analysis.csv")
 print("Accuracy-cost plot     : accuracy_vs_computational_cost.png")
 print("Note: FLOP estimates exclude scaling and nonlinear function costs.")
-print("Note: Runtime values are from a single measurement per model.")
+print("Note: Training times use single measurements; final prediction times are medians of 20 repetitions.")
 print("=" * 65)
 
 
