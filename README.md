@@ -48,7 +48,7 @@ The code uses paths relative to `main.py`, so these commands should be run from 
 MMA3001/
 ├── main.py                         # Runs the ten-stage analysis
 ├── main_model_functions.py         # Dataset, splitting, evaluation and model builders
-├── test_main.py                    # Automated tests (pytest)
+├── test_main.py                    # 13 automated tests (pytest)
 ├── README.md                       # Project documentation and reproduction steps
 ├── requirements.txt                # Pinned dependencies for the tested environment
 ├── LICENSE                         # Source-code licence
@@ -70,18 +70,23 @@ MMA3001/
 │   ├── accuracy_vs_computational_cost.png
 │   ├── temperature_region_rmse.png
 │   └── temperature_response_check.png
-└── docs/                            # Generated HTML API documentation + workflow overview
+└── docs/                            # API references and main-script workflow documentation
+    ├── index.html                   # pdoc module index
+    ├── main_model_functions.html    # pdoc function reference
+    ├── test_main.html               # pdoc test-function reference
+    ├── main_workflow.html           # Separate guide to the sequential main script
+    └── search.js                    # pdoc search index
 ```
 
 
-The script writes CSV results into `results/` and PNG figures into `figures/`. The `docs/` folder contains generated HTML documentation once created. Keeping source, data, results and documentation separate makes the repository easier to review. This structure assumes the output paths in `main.py` and the output checks in `test_main.py` have been updated to match.
+The script writes CSV results into `results/` and PNG figures into `figures/`. The `docs/` folder contains pdoc-generated function references and a separate HTML guide to the executable workflow. Source files, input data, generated results and documentation are kept in separate directories.
 
 ## Getting the repository
 
-Clone the repository using its URL from GitHub:
+Clone the repository using its HTTPS URL from GitHub (**Code → HTTPS**):
 
 ```bash
-git clone https://github.com/M0HUSSA1N/MMA3001.git
+git clone https://github.com/MOHUSSAIN/MMA3001.git
 cd MMA3001
 ```
 
@@ -89,7 +94,7 @@ Alternatively, download the repository ZIP from GitHub and extract it before run
 
 ## Environment and installation
 
-Use Python 3 and a virtual environment. The project depends on **NumPy, pandas, scikit-learn, Matplotlib and openpyxl**; **pytest** is needed for the automated tests. Exact versions should be recorded in `requirements.txt` for reproducibility.
+The project was run using **Python 3.13.0** and the pinned packages in `requirements.txt`: NumPy, pandas, scikit-learn, Matplotlib, openpyxl, pytest and pdoc. A virtual environment is recommended to avoid conflicts with other projects. The dependency versions document the development environment; compatible installations on other systems may use different versions.
 
 From a terminal opened in the repository's root directory:
 
@@ -127,47 +132,48 @@ The script performs these stages:
 2. Generate a correlation analysis and heatmap.
 3. Split data into training (70%), validation (15%) and independent testing (15%) subsets using random state 42.
 4. Fit the MLR baseline.
-5. Evaluate 24 SVR hyperparameter configurations on validation data.
-6. Evaluate 12 ANN hyperparameter configurations on validation data.
+5. Evaluate 60 SVR hyperparameter configurations on validation data.
+6. Evaluate 36 ANN hyperparameter configurations on validation data.
 7. Select the model by validation RMSE, refit all three methods on the combined training and validation data, and evaluate them on the untouched test set.
 8. Generate the final prediction and residual figures.
 9. Estimate computational requirements and compare accuracy with training and prediction costs.
 10. Evaluate errors across ambient-temperature regions and examine the predicted temperature response for physical plausibility.
 
-Standardisation for SVR and ANN is fitted inside scikit-learn pipelines, using training data during tuning. The test set is kept separate from model selection. The script may take some time to finish because it trains all 24 SVR and 12 ANN configurations again on each run.
+Standardisation for SVR and ANN is fitted inside scikit-learn pipelines, using training data during tuning. The test set is kept separate from model selection. The script may take some time to finish because it trains all 60 SVR and 36 ANN configurations on each run.
 
 ## Expected results
 
-The following values were obtained from the final reported run. Minor changes in runtime are expected across systems and executions; the fixed random state and dataset split support reproducible prediction results.
+The program uses a fixed random seed (`random_state=42`) for data splitting and ANN initialisation. With the supplied workbook and documented environment, the model-selection and error metrics below were obtained from the final experiment. Runtime values are **observations from one execution**, not machine-independent targets.
 
-| Model | Test MAE (MW) | Test RMSE (MW) | Test R² |
-| --- | ---: | ---: | ---: |
-| MLR | 3.6399 | 4.6365 | 0.9268 |
-| ANN | 3.2697 | 4.2314 | 0.9390 |
-| **SVR** | **2.9440** | **4.0275** | **0.9447** |
+| Model | Validation RMSE (MW) | Test MAE (MW) | Test RMSE (MW) | Test R² |
+| --- | ---: | ---: | ---: | ---: |
+| MLR | 4.6154 | 3.6399 | 4.6365 | 0.9268 |
+| ANN | 4.1159 | 3.2360 | 4.2013 | 0.9399 |
+| **SVR** | **3.8950** | **2.8765** | **3.9500** | **0.9468** |
 
 The selected configurations were:
 
-- **SVR:** RBF kernel, `C=100`, `epsilon=1.0`, `gamma=0.3`.
-- **ANN:** hidden layers `(50, 25)`, `alpha=0.01`, initial learning rate `0.001`.
+- **SVR:** RBF kernel, `C=200`, `epsilon=1.5`, `gamma=0.5` (best of 60 combinations).
+- **ANN:** hidden layers `(50, 25)`, `alpha=0.1`, initial learning rate `0.001` (best of 36 combinations).
+- **MLR:** ordinary least-squares baseline without hyperparameter tuning.
 
-SVR had the lowest validation and final test RMSE. ANN required substantially less inference computation in the reported run, so it remains a credible alternative where prediction frequency or computational resources are important. Timings are hardware-dependent and were not obtained from repeated controlled benchmarks.
+Configurations were selected using **validation RMSE**. Each selected model was then refitted on the combined training and validation data (85% of the cleaned dataset), with final performance reported on the independent 15% test set. SVR achieved the lowest validation and test RMSE, while ANN was considerably faster at predicting the test batch in the reported run.
 
 ### Computational performance
 
-The final fitted models produced the following **single-run** timing measurements for the batch of 1,430 test observations:
+Final **training times were measured once per fitted model**. Final prediction time was measured for the entire **1,430-observation test batch**, following one warm-up prediction, and reported as the **median of 20 repeated predictions**.
 
-| Model | Final training time (s) | Batch prediction time (s) | Approx. basic arithmetic operations per prediction |
+| Model | Final training time (s) | Median batch prediction time (s) | Approx. basic arithmetic operations / prediction |
 | --- | ---: | ---: | ---: |
-| MLR | 0.0018 | 0.0009 | 8 |
-| ANN | 4.4349 | 0.0011 | 2,950 |
-| SVR | 2.7432 | 0.3596 | 86,982 |
+| MLR | 0.0044 | 0.001026 | 8 |
+| ANN | 14.9763 | 0.000816 | 2,950 |
+| SVR | 9.5861 | 0.851972 | 72,898 |
 
-The final SVR retained 6,213 support vectors, whereas the selected ANN contained 1,551 trainable parameters. The simplified operation estimates exclude some work, including RBF exponential evaluations, ANN activation functions and feature scaling. Runtime measurements depend on hardware and execution conditions; these results are **not** controlled performance benchmarks.
+These timings are from the most recent supplied execution. The measured SVR/ANN prediction-time ratio for this run was **1,044.3×**, but inference times varied significantly between runs even after taking medians. This ratio must not be interpreted as a hardware-independent benchmark. The ANN contained **1,551 trainable parameters** (1,475 weights and 76 biases); the final SVR used **5,207 support vectors**. The arithmetic-operation estimates exclude feature scaling, nonlinear activation costs, RBF exponential calculations and other implementation overheads.
 
 ### Engineering checks
 
-SVR achieved the lowest test RMSE across the low-, moderate- and high-temperature regions (4.7091, 3.5802 and 4.0203 MW, respectively). All three models predicted decreasing electrical output during an ambient-temperature sweep with the other inputs fixed at training-data medians. SVR produced one test prediction outside the observed development-data PE range (420.26–495.76 MW). These checks provide additional diagnostic evidence but do not guarantee physical validity or performance outside the measured domain.
+SVR obtained the lowest test RMSE in each ambient-temperature region: **4.5984 MW** (low), **3.5396 MW** (moderate), and **3.9238 MW** (high). All three models predicted a decrease in electrical output across the sampled ambient-temperature sweep with other inputs fixed at their training-set median values. One SVR test prediction (0.07%) was outside the development dataset's observed PE range (420.26–495.76 MW); MLR and ANN had none. These checks help identify model behaviour but do not prove physical validity or reliable extrapolation to unobserved conditions.
 
 ## Generated outputs
 
@@ -177,8 +183,8 @@ Running `main.py` creates or overwrites the following generated files (within `r
 
 | File | Contents |
 | --- | --- |
-| `results/svr_tuning_results.csv` | Validation metrics, support-vector counts and timings for 24 SVR configurations |
-| `results/ann_tuning_results.csv` | Training/validation metrics, iterations and timings for 12 ANN configurations |
+| `results/svr_tuning_results.csv` | Validation metrics, support-vector counts and timings for 60 SVR configurations |
+| `results/ann_tuning_results.csv` | Training/validation metrics, iterations and timings for 36 ANN configurations |
 | `results/model_performance_results.csv` | Independent test metrics and final-model timings |
 | `results/computational_cost_analysis.csv` | Test accuracy, prediction time and approximate arithmetic-operation estimates |
 | `results/temperature_region_performance.csv` | Sample counts and test MAE/RMSE for low, moderate and high ambient-temperature regions |
@@ -223,40 +229,47 @@ The image previews work once the PNGs have been generated inside `figures/` and 
 
 ## Automated testing
 
-After running `main.py` once to generate the result files, execute the test suite from the repository root:
+The 13 tests in `test_main.py` check input structure, duplicate removal, deterministic data splitting, metric calculations, SVR/ANN pipeline settings, invalid-input handling, final result integrity and the SVR-versus-MLR baseline comparison. The additional workflow-output test checks that `main.py` compiles and that the expected **five CSV files** and **seven PNG files** exist. It also checks the row counts of the tuning CSVs (60 SVR and 36 ANN configurations).
+
+Run the full script before running pytest on a fresh clone, as several tests inspect artifacts produced by a prior execution:
 
 ```bash
+python main.py
 python -m pytest test_main.py -v
 ```
 
-To save the test output to a report:
+**Windows PowerShell:** show the test output in the terminal and write it to `test_report.txt` at the same time:
 
-```bash
-python -m pytest test_main.py -v > test_report.txt
+```powershell
+python -m pytest test_main.py -v 2>&1 | Tee-Object -FilePath test_report.txt
 ```
 
-The project has **12 pytest tests**, covering dataset validation/cleaning, disjoint data splitting, evaluation metrics, model construction, invalid inputs and selected output checks. All 12 tests passed in the final reported verification. Some tests check files produced by `main.py`, so **run `main.py` before pytest** on a fresh clone.
-
-Passing tests verify the behaviour covered by these cases; they do not independently validate every supplementary analysis, prove physical accuracy, or guarantee reliability for unsupported operating conditions.
+The workflow-output test verifies saved files from a previous run; it **does not execute** the computationally expensive hyperparameter search within pytest. A passing test suite does not independently establish accuracy on new plants or guarantee safe physical behaviour. The test report should be regenerated after the final code changes; don't report **13 passed** until pytest actually confirms it.
 
 ### How to verify the reproduced results
 
-On a fresh clone, verify that the script completes all ten stages, produces five CSV files in `results/` and seven PNG files in `figures/`, and reports the test RMSE values in the table above (subject to dependency/version compatibility). Then run the test suite and confirm all 12 tests pass. The split uses `random_state=42`, while measured execution times will vary with hardware and software environment. Some test cases depend on the CSV results existing, so their order matters.
+On a fresh clone, confirm that `main.py` completes its ten stages and saves five CSV files in `results/` and seven PNGs in `figures/`. Compare the test error metrics with the table above, then run pytest and inspect the test report. A fixed random seed makes the data partition and ANN configuration repeatable; execution times can change substantially with hardware and workload.
 
 ## Source-code documentation
 
-The project includes docstrings and inline comments. Reusable functions are defined in `main_model_functions.py`, while `main.py` coordinates the ten-stage analysis. HTML documentation for the helper module can be generated using **pdoc**:
+The project includes documentation for both reusable functions and the sequential main script:
+
+- [`docs/main_model_functions.html`](docs/main_model_functions.html): pdoc-generated API reference for the five user-written helper functions.
+- [`docs/test_main.html`](docs/test_main.html): pdoc-generated reference explaining the automated test functions.
+- [`docs/main_workflow.html`](docs/main_workflow.html): higher-level description of the executable analysis, including how it is run, model selection, outputs, engineering checks and limitations.
+- [`docs/index.html`](docs/index.html): index of the pdoc-generated modules.
+
+To regenerate API documentation after updating Python docstrings, run from the repository root:
 
 ```bash
-python -m pip install pdoc
-python -m pdoc main_model_functions -o docs
+python -m pdoc main_model_functions test_main -o docs
 ```
 
-Open the generated `docs/main_model_functions.html` in a browser. A separate overview in `docs/` can explain the high-level workflow in `main.py`. **Do not import `main.py` into pdoc directly**: it is a sequential executable script, so importing it would run the training workflow. The submitted `docs/` directory should contain the generated pages and any main-script overview actually prepared for the project.
+`main.py` executes its complete analysis at the top level, rather than defining an importable `main()` function. It should be run with `python main.py`, **not imported by pdoc**. The separate `main_workflow.html` page documents its flow without triggering a model run. The `docs/` directory is included in the repository so the pages can be opened without regenerating them.
 
 ## Software environment
 
-Python 3 and the packages listed in `requirements.txt` are needed to reproduce the workflow. The core packages are NumPy, pandas, scikit-learn, Matplotlib and openpyxl; pytest is used for testing. The optional HTML generator is pdoc. The versions in the final `requirements.txt` should match a working, tested environment rather than being guessed.
+Python 3 and the packages listed in `requirements.txt` are needed to reproduce the workflow. The core packages are NumPy, pandas, scikit-learn, Matplotlib and openpyxl; pytest is used for testing. pdoc generates the API documentation. The pinned versions in `requirements.txt` record the working development environment.
 
 To inspect the Python version and installed dependency versions:
 
@@ -281,7 +294,7 @@ The project was developed in VS Code on Windows; the code uses script-relative d
 - Validation uses a single reproducible random split; cross-validation or chronological evaluation would provide additional evidence of generalisation.
 - Inputs beyond the historical operating domain, or unusual combinations of otherwise valid inputs, may lead to unreliable extrapolation.
 - Regional analysis showed larger errors at low ambient temperatures. The models should not be treated as thermodynamic simulators or used for safety-critical control without further independent validation.
-- Arithmetic-operation estimates omit some nonlinear and preprocessing costs. Reported prediction timings are single-run measurements and vary with execution conditions.
+- Arithmetic-operation estimates omit some nonlinear and preprocessing costs. Prediction timings are medians of 20 repeated test-batch predictions; training times use one measurement per final model. Both remain system-dependent.
 
 ## Design and validation decisions
 

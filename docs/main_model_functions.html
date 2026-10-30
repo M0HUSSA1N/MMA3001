@@ -16,8 +16,17 @@
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
-        <div>
+        <div>            <a class="pdoc-button module-list-button" href="index.html">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
+  <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+</svg>                &nbsp;
+                Module Index
+            </a>
 
+
+            <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
+                   pattern=".+" required>
 
 
 
@@ -56,17 +65,32 @@ main_model_functions    </h1>
 
                         <div class="docstring"><p>MMA3001 Project: Reusable Model Functions</p>
 
-<p>Description:
-    This module provides reusable functions for the combined cycle power
-    plant output prediction project.</p>
+<p>Purpose:
+    Provide the reusable data-processing, evaluation, and model-construction
+    functions used to predict combined cycle power plant electrical output.
+    The main analysis and its visualisations are implemented in main.py.</p>
 
-<pre><code>Functions include dataset loading and cleaning, training-validation-test
-splitting, regression performance evaluation, and the creation of
-Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
+<p>Functions:
+    load_and_clean_data() - Load and validate the Excel dataset, then remove duplicate records before data splitting.
+    split_dataset()       - Create reproducible training, validation, and independent test sets (70% / 15% / 15%).
+    evaluate_model()      - Calculate MAE, RMSE, and R² for regression results.
+    make_svr()            - Create a scaled RBF Support Vector Regression model.
+    make_ann()            - Create a scaled feedforward neural network with reproducible training and early stopping.</p>
+
+<p>Implementation notes:
+    Scaling is included inside the SVR and ANN pipelines so that the scaler
+    is fitted only when the corresponding model is fitted. During tuning in
+    main.py, this prevents information from the validation and test sets
+    from entering the training-data preprocessing stage.</p>
+
+<pre><code>This module builds and evaluates models; it does not tune hyperparameters
+or choose the final model. Those decisions are made in main.py using
+validation RMSE, before an independent test-set evaluation.
 </code></pre>
 
 <p>Usage:
-    Functions are imported and used by main.py and test_main.py.</p>
+    Imported by main.py for analysis and by test_main.py for automated tests.
+    These functions are documented separately using pdoc.</p>
 </div>
 
                         <input id="mod-main_model_functions-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
@@ -76,191 +100,270 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">"""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">MMA3001 Project: Reusable Model Functions</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">Description:</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">    This module provides reusable functions for the combined cycle power</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="sd">    plant output prediction project.</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">    Functions include dataset loading and cleaning, training-validation-test</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">    splitting, regression performance evaluation, and the creation of</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">Usage:</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    Functions are imported and used by main.py and test_main.py.</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">"""</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">Purpose:</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">    Provide the reusable data-processing, evaluation, and model-construction</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="sd">    functions used to predict combined cycle power plant electrical output.</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="sd">    The main analysis and its visualisations are implemented in main.py.</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">Functions:</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    load_and_clean_data() - Load and validate the Excel dataset, then remove duplicate records before data splitting.</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    split_dataset()       - Create reproducible training, validation, and independent test sets (70% / 15% / 15%).</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    evaluate_model()      - Calculate MAE, RMSE, and R² for regression results.</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    make_svr()            - Create a scaled RBF Support Vector Regression model.</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    make_ann()            - Create a scaled feedforward neural network with reproducible training and early stopping.</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neural_network</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLPRegressor</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.svm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVR</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">Implementation notes:</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">    Scaling is included inside the SVR and ANN pipelines so that the scaler</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    is fitted only when the corresponding model is fitted. During tuning in</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">    main.py, this prevents information from the validation and test sets</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    from entering the training-data preprocessing stage.</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    This module builds and evaluates models; it does not tune hyperparameters</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    or choose the final model. Those decisions are made in main.py using</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">    validation RMSE, before an independent test-set evaluation.</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>
-</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="k">def</span><span class="w"> </span><span class="nf">load_and_clean_data</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">    Load and validate the power plant dataset before model training.</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">    Args:</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        dataset_path: Path to the Excel dataset containing AT, V, AP, RHand PE columns.</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">Usage:</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">    Imported by main.py for analysis and by test_main.py for automated tests.</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">    These functions are documented separately using pdoc.</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">"""</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">    Returns:</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        df: Cleaned dataset containing the required columns.</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">        original_samples: Number of observations before cleaning.</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">        duplicate_count: Number of duplicate observations removed.</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">        missing_values: Number of missing values detected.</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">    Raises:</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        FileNotFoundError: If the dataset file does not exist.</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        ValueError: If required columns are missing, values are invalid, or no observations remain after cleaning.</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">    """</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset not found: </span><span class="si">{</span><span class="n">dataset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="c1"># Verify the required input features and target variable.</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">,</span> <span class="s2">"PE"</span><span class="p">]</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>    <span class="n">missing_columns</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>        <span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>    <span class="p">]</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>    <span class="k">if</span> <span class="n">missing_columns</span><span class="p">:</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required columns: </span><span class="si">{</span><span class="n">missing_columns</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neural_network</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLPRegressor</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.svm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVR</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="k">def</span><span class="w"> </span><span class="nf">load_and_clean_data</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">    Load, check, and clean the power plant dataset before model development.</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">    The dataset must contain four input features (AT, V, AP, RH) and the</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">    target (PE). Missing, non-numeric, or infinite values are rejected rather</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">    than silently replaced. Exact duplicate rows are removed before splitting</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">    to reduce the risk of identical observations appearing in different sets.</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">    This function validates numerical data but does not establish whether a</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">    particular observation is physically realistic or within the operating</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">    domain of the power plant.</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">    Args:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">        dataset_path: Path or path-like value for the Excel workbook. </span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">        The required columns are AT (°C), V (cm Hg), AP (mbar), RH (%), and PE (MW).</span>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>    <span class="c1"># Reject non-numeric or missing observations.</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">:</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>        <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"raise"</span><span class="p">)</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">    Returns:</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">        df: DataFrame containing the five required columns, with duplicate rows removed and the index reset.</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">        original_samples: Row count before duplicate removal.</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">        duplicate_count: Number of exact duplicate rows removed.</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">        missing_values: Number of missing entries found (zero for a successfully returned dataset, since missing data raises an error).</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>    <span class="n">missing_values</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="k">if</span> <span class="n">missing_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>            <span class="sa">f</span><span class="s2">"Dataset contains </span><span class="si">{</span><span class="n">missing_values</span><span class="si">}</span><span class="s2"> missing values."</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>        <span class="p">)</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="c1"># Reject infinite numerical values.</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Dataset contains infinite values."</span><span class="p">)</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>    <span class="n">original_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="n">duplicate_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>    <span class="c1"># Avoid repeated identical observations in the dataset.</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No valid observations remain after cleaning."</span><span class="p">)</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    Raises:</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">        FileNotFoundError: If the dataset path does not identify a file.</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">        ValueError: If required columns are missing, numeric conversion fails, missing or non-finite values occur, or no rows remain.</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    """</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="c1"># Fail early with a clear error instead of relying on pandas' file error.</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset not found: </span><span class="si">{</span><span class="n">dataset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>    <span class="c1"># Use the first worksheet, matching the supplied UCI Excel workbook.</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>    <span class="c1"># All four predictors and the power-output target are required by the models.</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>    <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">,</span> <span class="s2">"PE"</span><span class="p">]</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>    <span class="n">missing_columns</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>        <span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>        <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>    <span class="p">]</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">original_samples</span><span class="p">,</span> <span class="n">duplicate_count</span><span class="p">,</span> <span class="n">missing_values</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="k">def</span><span class="w"> </span><span class="nf">split_dataset</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">    Split the cleaned dataset into training, validation and testing sets.</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="k">if</span> <span class="n">missing_columns</span><span class="p">:</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required columns: </span><span class="si">{</span><span class="n">missing_columns</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="c1"># Fix the feature order and exclude unrelated columns, if any are present.</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    Args:</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">        df: Cleaned power plant dataset containing AT, V, AP, RH and PE.</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    Returns:</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">        X_temp: Combined training and validation input features (85%).</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">        X_train: Training input features (70%).</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">        X_val: Validation input features (15%).</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">        X_test: Testing input features (15%).</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">        y_temp: Combined training and validation target values (85%).</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">        y_train: Training target values (70%).</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">        y_val: Validation target values (15%).</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">        y_test: Testing target values (15%).</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">    """</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">]]</span>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"PE"</span><span class="p">]</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>    <span class="c1"># Raise on invalid text instead of silently coercing it into missing data.</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">:</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"raise"</span><span class="p">)</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="c1"># Missing measurements should not be silently filled or dropped because either choice could change the observations used for model comparison.</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="n">missing_values</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>    <span class="k">if</span> <span class="n">missing_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>            <span class="sa">f</span><span class="s2">"Dataset contains </span><span class="si">{</span><span class="n">missing_values</span><span class="si">}</span><span class="s2"> missing values."</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="p">)</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    <span class="c1"># Infinity passes ordinary numeric conversion but is unsuitable for fitting.</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Dataset contains infinite values."</span><span class="p">)</span>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="c1"># Reserve an independent test set before model selection.</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="n">original_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">duplicate_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="c1"># Use the remaining observations for training and validation.</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_temp</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">/</span> <span class="mf">0.85</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="c1"># Remove identical rows before splitting to limit duplicate leakage between training, validation, and test subsets.</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>        <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="n">y_test</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>    <span class="p">)</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No valid observations remain after cleaning."</span><span class="p">)</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">original_samples</span><span class="p">,</span> <span class="n">duplicate_count</span><span class="p">,</span> <span class="n">missing_values</span>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    Evaluate regression accuracy using actual and predicted power output.</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    Args:</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">        y_true: Actual electrical power output values (MW).</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        y_pred: Predicted electrical power output values (MW).</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    Returns:</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">        mae: Mean Absolute Error (MW).</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">        rmse: Root Mean Squared Error (MW).</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">        r2: Coefficient of determination.</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">    """</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">rmse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="k">return</span> <span class="n">mae</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">r2</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_svr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="sd">    Create an RBF Support Vector Regression model.</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="k">def</span><span class="w"> </span><span class="nf">split_dataset</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    Create reproducible, non-overlapping training, validation, and test sets.</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    The test set is reserved first and is not used for tuning. The remaining</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    observations are then divided into training and validation subsets.</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">    The second test_size is relative to the remaining 85%, so 0.15 / 0.85</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    produces approximately 15% validation data overall.</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    Args:</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">        df: Cleaned DataFrame containing AT, V, AP, RH, and PE.</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">    Returns:</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">        X_temp: Combined training and validation input features (~85%).</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">        X_train: Training input features (~70%).</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">        X_val: Validation input features (~15%).</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        X_test: Independent test input features (~15%).</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        y_temp: Combined training and validation PE values (~85%).</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">        y_train: Training PE values (~70%).</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">        y_val: Validation PE values (~15%).</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="sd">        y_test: Independent test PE values (~15%).</span>
 </span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">    Feature standardisation is included because the RBF kernel depends on distances between observations.</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    Args:</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">        c: Regularisation parameter controlling the penalty for errors.</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">        epsilon: Width of the epsilon-insensitive error region.</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">        gamma: RBF kernel coefficient controlling model sensitivity.</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">    Returns:</span>
-</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="sd">        svr_model: Pipeline containing a StandardScaler and SVR.</span>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="sd">    """</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="n">svr_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>        <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="p">)</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">    Notes:</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">        random_state=42 makes the split reproducible for the same input data</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">        and software environment. This is a random, not chronological, split.</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">    """</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="c1"># The predictors are measured inputs; PE is the output to be estimated.</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">]]</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"PE"</span><span class="p">]</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="c1"># Reserve the untouched 15% test set before any model selection.</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="c1"># Allocate 15% of the original dataset to validation and 70% to training.</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>    <span class="c1"># The denominator accounts for the 15% already held out for final testing.</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_temp</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">/</span> <span class="mf">0.85</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>    <span class="k">return</span> <span class="n">svr_model</span>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_ann</span><span class="p">(</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    Create an ANN regression model with feature standardisation.</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>    <span class="c1"># Returning X_temp/y_temp permits a final refit on the full 85% development subset after hyperparameters have been chosen using validation data.</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>        <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="n">y_test</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>    <span class="p">)</span>
 </span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="sd">    Args:</span>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="sd">        hidden_layers: Tuple specifying neurons in each hidden layer.</span>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">        alpha: L2 regularisation parameter used during ANN training.</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">        learning_rate: Initial learning rate for the Adam optimiser.</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">    Calculate complementary regression metrics for electrical power output.</span>
 </span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">    Returns:</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">        ann_model: Pipeline containing a StandardScaler and MLPRegressor.</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">    """</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>    <span class="n">ann_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>        <span class="n">MLPRegressor</span><span class="p">(</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>            <span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="n">hidden_layers</span><span class="p">,</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>            <span class="n">activation</span><span class="o">=</span><span class="s2">"relu"</span><span class="p">,</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>            <span class="n">solver</span><span class="o">=</span><span class="s2">"adam"</span><span class="p">,</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>            <span class="n">learning_rate_init</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>            <span class="n">max_iter</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>            <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>            <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>            <span class="n">n_iter_no_change</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>            <span class="n">tol</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>        <span class="p">)</span>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>    <span class="p">)</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">    MAE describes average absolute error; RMSE penalises large errors more</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    heavily; R² measures explained variation relative to predicting the mean.</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">    These metrics describe the supplied observations and do not establish</span>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">    reliability outside the evaluated operating conditions.</span>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="sd">    Args:</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="sd">        y_true: Measured electrical power output values (MW).</span>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a><span class="sd">        y_pred: Model-predicted electrical power output values (MW).</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="sd">    Returns:</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="sd">        mae: Mean Absolute Error (MW).</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="sd">        rmse: Root Mean Squared Error (MW).</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">        r2: Coefficient of determination (dimensionless).</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">    """</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>    <span class="c1"># Take the square root of MSE so that RMSE is expressed in MW, not MW².</span>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>    <span class="n">rmse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
 </span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">ann_model</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">mae</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">r2</span>
+</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_svr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">    Construct a StandardScaler + RBF Support Vector Regression pipeline.</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a>
+</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">    The RBF kernel compares distances between input observations. Scaling</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">    prevents variables with larger numerical ranges from dominating these</span>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">    distances. The pipeline fits its scaler on whichever dataset is passed</span>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="sd">    to .fit(), preventing validation/test leakage during model tuning.</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>
+</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="sd">    Args:</span>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">        c: Positive regularisation parameter controlling the penalty for</span>
+</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a><span class="sd">            predictions outside the epsilon-insensitive region.</span>
+</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a><span class="sd">        epsilon: Width of the error-insensitive region in target units (MW).</span>
+</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a><span class="sd">        gamma: RBF kernel coefficient, supplied as a number or 'scale'.</span>
+</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="sd">    Returns:</span>
+</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a><span class="sd">        svr_model: Unfitted pipeline containing StandardScaler and RBF SVR.</span>
+</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>
+</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a><span class="sd">    Notes:</span>
+</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="sd">        Model fitting and hyperparameter selection take place in main.py.</span>
+</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a><span class="sd">        Larger epsilon values can reduce the number of support vectors, but</span>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="sd">        their effect on accuracy must be assessed using validation data.</span>
+</span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a><span class="sd">    """</span>
+</span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>    <span class="c1"># Place scaling in the pipeline so each candidate learns its own scaling parameters exclusively from the observations used to fit that candidate.</span>
+</span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a>    <span class="n">svr_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
+</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>        <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span>
+</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>    <span class="p">)</span>
+</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>    <span class="k">return</span> <span class="n">svr_model</span>
+</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a>
+</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>
+</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_ann</span><span class="p">(</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
+</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">    Construct a scaled feedforward neural network regression pipeline.</span>
+</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a>
+</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a><span class="sd">    The ANN uses ReLU activations and Adam optimisation. Standardisation helps</span>
+</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">    gradient-based training, while L2 regularisation and early stopping help</span>
+</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="sd">    limit overfitting. The random seed fixes the ANN initialisation and its</span>
+</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="sd">    internal validation split for reproducibility.</span>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>
+</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="sd">    Args:</span>
+</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a><span class="sd">        hidden_layers: Tuple giving the number of neurons in each hidden layer, e.g. (50, 25) for two hidden layers.</span>
+</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="sd">        alpha: L2 regularisation strength; larger values penalise large weights more strongly.</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="sd">        learning_rate: Initial Adam learning rate, passed as learning_rate_init to MLPRegressor.</span>
+</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a>
+</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">    Returns:</span>
+</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a><span class="sd">        ann_model: Unfitted pipeline containing StandardScaler and MLPRegressor.</span>
+</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a>
+</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="sd">    Notes:</span>
+</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="sd">        Early stopping reserves 15% of the data passed to .fit() for</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="sd">        internal training monitoring. This differs from the separate 15%</span>
+</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a><span class="sd">        validation subset used in main.py for comparing configurations.</span>
+</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a><span class="sd">        Training stops after sufficient lack of improvement or after the</span>
+</span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a><span class="sd">        maximum of 2,500 iterations; the actual iteration count may vary.</span>
+</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a><span class="sd">    """</span>
+</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a>    <span class="c1"># Keep feature standardisation inside the pipeline to avoid fitting a scaler on validation or test data during model selection.</span>
+</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a>    <span class="n">ann_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
+</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a>        <span class="n">MLPRegressor</span><span class="p">(</span>
+</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a>            <span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="n">hidden_layers</span><span class="p">,</span>
+</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a>            <span class="n">activation</span><span class="o">=</span><span class="s2">"relu"</span><span class="p">,</span>
+</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>            <span class="n">solver</span><span class="o">=</span><span class="s2">"adam"</span><span class="p">,</span>
+</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>            <span class="n">learning_rate_init</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
+</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a>            <span class="n">max_iter</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a>            <span class="c1"># Reserve part of each fit's data for early-stopping monitoring.</span>
+</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>            <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>            <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a>            <span class="c1"># Stop if the monitored score does not improve sufficiently.</span>
+</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a>            <span class="n">n_iter_no_change</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
+</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a>            <span class="n">tol</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span>
+</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a>            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>        <span class="p">)</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>    <span class="p">)</span>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a>    <span class="k">return</span> <span class="n">ann_model</span>
 </span></pre></div>
 
 
@@ -276,84 +379,108 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
 
     </div>
     <a class="headerlink" href="#load_and_clean_data"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="load_and_clean_data-28"><a href="#load_and_clean_data-28"><span class="linenos">28</span></a><span class="k">def</span><span class="w"> </span><span class="nf">load_and_clean_data</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-</span><span id="load_and_clean_data-29"><a href="#load_and_clean_data-29"><span class="linenos">29</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="load_and_clean_data-30"><a href="#load_and_clean_data-30"><span class="linenos">30</span></a><span class="sd">    Load and validate the power plant dataset before model training.</span>
-</span><span id="load_and_clean_data-31"><a href="#load_and_clean_data-31"><span class="linenos">31</span></a>
-</span><span id="load_and_clean_data-32"><a href="#load_and_clean_data-32"><span class="linenos">32</span></a><span class="sd">    Args:</span>
-</span><span id="load_and_clean_data-33"><a href="#load_and_clean_data-33"><span class="linenos">33</span></a><span class="sd">        dataset_path: Path to the Excel dataset containing AT, V, AP, RHand PE columns.</span>
-</span><span id="load_and_clean_data-34"><a href="#load_and_clean_data-34"><span class="linenos">34</span></a>
-</span><span id="load_and_clean_data-35"><a href="#load_and_clean_data-35"><span class="linenos">35</span></a><span class="sd">    Returns:</span>
-</span><span id="load_and_clean_data-36"><a href="#load_and_clean_data-36"><span class="linenos">36</span></a><span class="sd">        df: Cleaned dataset containing the required columns.</span>
-</span><span id="load_and_clean_data-37"><a href="#load_and_clean_data-37"><span class="linenos">37</span></a><span class="sd">        original_samples: Number of observations before cleaning.</span>
-</span><span id="load_and_clean_data-38"><a href="#load_and_clean_data-38"><span class="linenos">38</span></a><span class="sd">        duplicate_count: Number of duplicate observations removed.</span>
-</span><span id="load_and_clean_data-39"><a href="#load_and_clean_data-39"><span class="linenos">39</span></a><span class="sd">        missing_values: Number of missing values detected.</span>
-</span><span id="load_and_clean_data-40"><a href="#load_and_clean_data-40"><span class="linenos">40</span></a>
-</span><span id="load_and_clean_data-41"><a href="#load_and_clean_data-41"><span class="linenos">41</span></a><span class="sd">    Raises:</span>
-</span><span id="load_and_clean_data-42"><a href="#load_and_clean_data-42"><span class="linenos">42</span></a><span class="sd">        FileNotFoundError: If the dataset file does not exist.</span>
-</span><span id="load_and_clean_data-43"><a href="#load_and_clean_data-43"><span class="linenos">43</span></a><span class="sd">        ValueError: If required columns are missing, values are invalid, or no observations remain after cleaning.</span>
-</span><span id="load_and_clean_data-44"><a href="#load_and_clean_data-44"><span class="linenos">44</span></a><span class="sd">    """</span>
-</span><span id="load_and_clean_data-45"><a href="#load_and_clean_data-45"><span class="linenos">45</span></a>    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
-</span><span id="load_and_clean_data-46"><a href="#load_and_clean_data-46"><span class="linenos">46</span></a>
-</span><span id="load_and_clean_data-47"><a href="#load_and_clean_data-47"><span class="linenos">47</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-</span><span id="load_and_clean_data-48"><a href="#load_and_clean_data-48"><span class="linenos">48</span></a>        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset not found: </span><span class="si">{</span><span class="n">dataset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span id="load_and_clean_data-49"><a href="#load_and_clean_data-49"><span class="linenos">49</span></a>
-</span><span id="load_and_clean_data-50"><a href="#load_and_clean_data-50"><span class="linenos">50</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="load_and_clean_data-51"><a href="#load_and_clean_data-51"><span class="linenos">51</span></a>
-</span><span id="load_and_clean_data-52"><a href="#load_and_clean_data-52"><span class="linenos">52</span></a>    <span class="c1"># Verify the required input features and target variable.</span>
-</span><span id="load_and_clean_data-53"><a href="#load_and_clean_data-53"><span class="linenos">53</span></a>    <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">,</span> <span class="s2">"PE"</span><span class="p">]</span>
-</span><span id="load_and_clean_data-54"><a href="#load_and_clean_data-54"><span class="linenos">54</span></a>    <span class="n">missing_columns</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="load_and_clean_data-55"><a href="#load_and_clean_data-55"><span class="linenos">55</span></a>        <span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span>
-</span><span id="load_and_clean_data-56"><a href="#load_and_clean_data-56"><span class="linenos">56</span></a>        <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-</span><span id="load_and_clean_data-57"><a href="#load_and_clean_data-57"><span class="linenos">57</span></a>    <span class="p">]</span>
-</span><span id="load_and_clean_data-58"><a href="#load_and_clean_data-58"><span class="linenos">58</span></a>
-</span><span id="load_and_clean_data-59"><a href="#load_and_clean_data-59"><span class="linenos">59</span></a>    <span class="k">if</span> <span class="n">missing_columns</span><span class="p">:</span>
-</span><span id="load_and_clean_data-60"><a href="#load_and_clean_data-60"><span class="linenos">60</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required columns: </span><span class="si">{</span><span class="n">missing_columns</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span id="load_and_clean_data-61"><a href="#load_and_clean_data-61"><span class="linenos">61</span></a>
-</span><span id="load_and_clean_data-62"><a href="#load_and_clean_data-62"><span class="linenos">62</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-</span><span id="load_and_clean_data-63"><a href="#load_and_clean_data-63"><span class="linenos">63</span></a>
-</span><span id="load_and_clean_data-64"><a href="#load_and_clean_data-64"><span class="linenos">64</span></a>    <span class="c1"># Reject non-numeric or missing observations.</span>
-</span><span id="load_and_clean_data-65"><a href="#load_and_clean_data-65"><span class="linenos">65</span></a>    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">:</span>
-</span><span id="load_and_clean_data-66"><a href="#load_and_clean_data-66"><span class="linenos">66</span></a>        <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"raise"</span><span class="p">)</span>
-</span><span id="load_and_clean_data-67"><a href="#load_and_clean_data-67"><span class="linenos">67</span></a>
-</span><span id="load_and_clean_data-68"><a href="#load_and_clean_data-68"><span class="linenos">68</span></a>    <span class="n">missing_values</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-</span><span id="load_and_clean_data-69"><a href="#load_and_clean_data-69"><span class="linenos">69</span></a>
-</span><span id="load_and_clean_data-70"><a href="#load_and_clean_data-70"><span class="linenos">70</span></a>    <span class="k">if</span> <span class="n">missing_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="load_and_clean_data-71"><a href="#load_and_clean_data-71"><span class="linenos">71</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="load_and_clean_data-72"><a href="#load_and_clean_data-72"><span class="linenos">72</span></a>            <span class="sa">f</span><span class="s2">"Dataset contains </span><span class="si">{</span><span class="n">missing_values</span><span class="si">}</span><span class="s2"> missing values."</span>
-</span><span id="load_and_clean_data-73"><a href="#load_and_clean_data-73"><span class="linenos">73</span></a>        <span class="p">)</span>
-</span><span id="load_and_clean_data-74"><a href="#load_and_clean_data-74"><span class="linenos">74</span></a>
-</span><span id="load_and_clean_data-75"><a href="#load_and_clean_data-75"><span class="linenos">75</span></a>    <span class="c1"># Reject infinite numerical values.</span>
-</span><span id="load_and_clean_data-76"><a href="#load_and_clean_data-76"><span class="linenos">76</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-</span><span id="load_and_clean_data-77"><a href="#load_and_clean_data-77"><span class="linenos">77</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Dataset contains infinite values."</span><span class="p">)</span>
-</span><span id="load_and_clean_data-78"><a href="#load_and_clean_data-78"><span class="linenos">78</span></a>
-</span><span id="load_and_clean_data-79"><a href="#load_and_clean_data-79"><span class="linenos">79</span></a>    <span class="n">original_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-</span><span id="load_and_clean_data-80"><a href="#load_and_clean_data-80"><span class="linenos">80</span></a>    <span class="n">duplicate_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-</span><span id="load_and_clean_data-81"><a href="#load_and_clean_data-81"><span class="linenos">81</span></a>
-</span><span id="load_and_clean_data-82"><a href="#load_and_clean_data-82"><span class="linenos">82</span></a>    <span class="c1"># Avoid repeated identical observations in the dataset.</span>
-</span><span id="load_and_clean_data-83"><a href="#load_and_clean_data-83"><span class="linenos">83</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="load_and_clean_data-84"><a href="#load_and_clean_data-84"><span class="linenos">84</span></a>
-</span><span id="load_and_clean_data-85"><a href="#load_and_clean_data-85"><span class="linenos">85</span></a>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-</span><span id="load_and_clean_data-86"><a href="#load_and_clean_data-86"><span class="linenos">86</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No valid observations remain after cleaning."</span><span class="p">)</span>
-</span><span id="load_and_clean_data-87"><a href="#load_and_clean_data-87"><span class="linenos">87</span></a>
-</span><span id="load_and_clean_data-88"><a href="#load_and_clean_data-88"><span class="linenos">88</span></a>    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">original_samples</span><span class="p">,</span> <span class="n">duplicate_count</span><span class="p">,</span> <span class="n">missing_values</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="load_and_clean_data-44"><a href="#load_and_clean_data-44"><span class="linenos"> 44</span></a><span class="k">def</span><span class="w"> </span><span class="nf">load_and_clean_data</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
+</span><span id="load_and_clean_data-45"><a href="#load_and_clean_data-45"><span class="linenos"> 45</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="load_and_clean_data-46"><a href="#load_and_clean_data-46"><span class="linenos"> 46</span></a><span class="sd">    Load, check, and clean the power plant dataset before model development.</span>
+</span><span id="load_and_clean_data-47"><a href="#load_and_clean_data-47"><span class="linenos"> 47</span></a>
+</span><span id="load_and_clean_data-48"><a href="#load_and_clean_data-48"><span class="linenos"> 48</span></a><span class="sd">    The dataset must contain four input features (AT, V, AP, RH) and the</span>
+</span><span id="load_and_clean_data-49"><a href="#load_and_clean_data-49"><span class="linenos"> 49</span></a><span class="sd">    target (PE). Missing, non-numeric, or infinite values are rejected rather</span>
+</span><span id="load_and_clean_data-50"><a href="#load_and_clean_data-50"><span class="linenos"> 50</span></a><span class="sd">    than silently replaced. Exact duplicate rows are removed before splitting</span>
+</span><span id="load_and_clean_data-51"><a href="#load_and_clean_data-51"><span class="linenos"> 51</span></a><span class="sd">    to reduce the risk of identical observations appearing in different sets.</span>
+</span><span id="load_and_clean_data-52"><a href="#load_and_clean_data-52"><span class="linenos"> 52</span></a>
+</span><span id="load_and_clean_data-53"><a href="#load_and_clean_data-53"><span class="linenos"> 53</span></a><span class="sd">    This function validates numerical data but does not establish whether a</span>
+</span><span id="load_and_clean_data-54"><a href="#load_and_clean_data-54"><span class="linenos"> 54</span></a><span class="sd">    particular observation is physically realistic or within the operating</span>
+</span><span id="load_and_clean_data-55"><a href="#load_and_clean_data-55"><span class="linenos"> 55</span></a><span class="sd">    domain of the power plant.</span>
+</span><span id="load_and_clean_data-56"><a href="#load_and_clean_data-56"><span class="linenos"> 56</span></a>
+</span><span id="load_and_clean_data-57"><a href="#load_and_clean_data-57"><span class="linenos"> 57</span></a><span class="sd">    Args:</span>
+</span><span id="load_and_clean_data-58"><a href="#load_and_clean_data-58"><span class="linenos"> 58</span></a><span class="sd">        dataset_path: Path or path-like value for the Excel workbook. </span>
+</span><span id="load_and_clean_data-59"><a href="#load_and_clean_data-59"><span class="linenos"> 59</span></a><span class="sd">        The required columns are AT (°C), V (cm Hg), AP (mbar), RH (%), and PE (MW).</span>
+</span><span id="load_and_clean_data-60"><a href="#load_and_clean_data-60"><span class="linenos"> 60</span></a>
+</span><span id="load_and_clean_data-61"><a href="#load_and_clean_data-61"><span class="linenos"> 61</span></a><span class="sd">    Returns:</span>
+</span><span id="load_and_clean_data-62"><a href="#load_and_clean_data-62"><span class="linenos"> 62</span></a><span class="sd">        df: DataFrame containing the five required columns, with duplicate rows removed and the index reset.</span>
+</span><span id="load_and_clean_data-63"><a href="#load_and_clean_data-63"><span class="linenos"> 63</span></a><span class="sd">        original_samples: Row count before duplicate removal.</span>
+</span><span id="load_and_clean_data-64"><a href="#load_and_clean_data-64"><span class="linenos"> 64</span></a><span class="sd">        duplicate_count: Number of exact duplicate rows removed.</span>
+</span><span id="load_and_clean_data-65"><a href="#load_and_clean_data-65"><span class="linenos"> 65</span></a><span class="sd">        missing_values: Number of missing entries found (zero for a successfully returned dataset, since missing data raises an error).</span>
+</span><span id="load_and_clean_data-66"><a href="#load_and_clean_data-66"><span class="linenos"> 66</span></a>
+</span><span id="load_and_clean_data-67"><a href="#load_and_clean_data-67"><span class="linenos"> 67</span></a><span class="sd">    Raises:</span>
+</span><span id="load_and_clean_data-68"><a href="#load_and_clean_data-68"><span class="linenos"> 68</span></a><span class="sd">        FileNotFoundError: If the dataset path does not identify a file.</span>
+</span><span id="load_and_clean_data-69"><a href="#load_and_clean_data-69"><span class="linenos"> 69</span></a><span class="sd">        ValueError: If required columns are missing, numeric conversion fails, missing or non-finite values occur, or no rows remain.</span>
+</span><span id="load_and_clean_data-70"><a href="#load_and_clean_data-70"><span class="linenos"> 70</span></a><span class="sd">    """</span>
+</span><span id="load_and_clean_data-71"><a href="#load_and_clean_data-71"><span class="linenos"> 71</span></a>    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+</span><span id="load_and_clean_data-72"><a href="#load_and_clean_data-72"><span class="linenos"> 72</span></a>
+</span><span id="load_and_clean_data-73"><a href="#load_and_clean_data-73"><span class="linenos"> 73</span></a>    <span class="c1"># Fail early with a clear error instead of relying on pandas' file error.</span>
+</span><span id="load_and_clean_data-74"><a href="#load_and_clean_data-74"><span class="linenos"> 74</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+</span><span id="load_and_clean_data-75"><a href="#load_and_clean_data-75"><span class="linenos"> 75</span></a>        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset not found: </span><span class="si">{</span><span class="n">dataset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="load_and_clean_data-76"><a href="#load_and_clean_data-76"><span class="linenos"> 76</span></a>
+</span><span id="load_and_clean_data-77"><a href="#load_and_clean_data-77"><span class="linenos"> 77</span></a>    <span class="c1"># Use the first worksheet, matching the supplied UCI Excel workbook.</span>
+</span><span id="load_and_clean_data-78"><a href="#load_and_clean_data-78"><span class="linenos"> 78</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="load_and_clean_data-79"><a href="#load_and_clean_data-79"><span class="linenos"> 79</span></a>
+</span><span id="load_and_clean_data-80"><a href="#load_and_clean_data-80"><span class="linenos"> 80</span></a>    <span class="c1"># All four predictors and the power-output target are required by the models.</span>
+</span><span id="load_and_clean_data-81"><a href="#load_and_clean_data-81"><span class="linenos"> 81</span></a>    <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">,</span> <span class="s2">"PE"</span><span class="p">]</span>
+</span><span id="load_and_clean_data-82"><a href="#load_and_clean_data-82"><span class="linenos"> 82</span></a>    <span class="n">missing_columns</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="load_and_clean_data-83"><a href="#load_and_clean_data-83"><span class="linenos"> 83</span></a>        <span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span>
+</span><span id="load_and_clean_data-84"><a href="#load_and_clean_data-84"><span class="linenos"> 84</span></a>        <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+</span><span id="load_and_clean_data-85"><a href="#load_and_clean_data-85"><span class="linenos"> 85</span></a>    <span class="p">]</span>
+</span><span id="load_and_clean_data-86"><a href="#load_and_clean_data-86"><span class="linenos"> 86</span></a>
+</span><span id="load_and_clean_data-87"><a href="#load_and_clean_data-87"><span class="linenos"> 87</span></a>    <span class="k">if</span> <span class="n">missing_columns</span><span class="p">:</span>
+</span><span id="load_and_clean_data-88"><a href="#load_and_clean_data-88"><span class="linenos"> 88</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required columns: </span><span class="si">{</span><span class="n">missing_columns</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="load_and_clean_data-89"><a href="#load_and_clean_data-89"><span class="linenos"> 89</span></a>
+</span><span id="load_and_clean_data-90"><a href="#load_and_clean_data-90"><span class="linenos"> 90</span></a>    <span class="c1"># Fix the feature order and exclude unrelated columns, if any are present.</span>
+</span><span id="load_and_clean_data-91"><a href="#load_and_clean_data-91"><span class="linenos"> 91</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="load_and_clean_data-92"><a href="#load_and_clean_data-92"><span class="linenos"> 92</span></a>
+</span><span id="load_and_clean_data-93"><a href="#load_and_clean_data-93"><span class="linenos"> 93</span></a>    <span class="c1"># Raise on invalid text instead of silently coercing it into missing data.</span>
+</span><span id="load_and_clean_data-94"><a href="#load_and_clean_data-94"><span class="linenos"> 94</span></a>    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">:</span>
+</span><span id="load_and_clean_data-95"><a href="#load_and_clean_data-95"><span class="linenos"> 95</span></a>        <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"raise"</span><span class="p">)</span>
+</span><span id="load_and_clean_data-96"><a href="#load_and_clean_data-96"><span class="linenos"> 96</span></a>
+</span><span id="load_and_clean_data-97"><a href="#load_and_clean_data-97"><span class="linenos"> 97</span></a>    <span class="c1"># Missing measurements should not be silently filled or dropped because either choice could change the observations used for model comparison.</span>
+</span><span id="load_and_clean_data-98"><a href="#load_and_clean_data-98"><span class="linenos"> 98</span></a>    <span class="n">missing_values</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</span><span id="load_and_clean_data-99"><a href="#load_and_clean_data-99"><span class="linenos"> 99</span></a>
+</span><span id="load_and_clean_data-100"><a href="#load_and_clean_data-100"><span class="linenos">100</span></a>    <span class="k">if</span> <span class="n">missing_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="load_and_clean_data-101"><a href="#load_and_clean_data-101"><span class="linenos">101</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="load_and_clean_data-102"><a href="#load_and_clean_data-102"><span class="linenos">102</span></a>            <span class="sa">f</span><span class="s2">"Dataset contains </span><span class="si">{</span><span class="n">missing_values</span><span class="si">}</span><span class="s2"> missing values."</span>
+</span><span id="load_and_clean_data-103"><a href="#load_and_clean_data-103"><span class="linenos">103</span></a>        <span class="p">)</span>
+</span><span id="load_and_clean_data-104"><a href="#load_and_clean_data-104"><span class="linenos">104</span></a>
+</span><span id="load_and_clean_data-105"><a href="#load_and_clean_data-105"><span class="linenos">105</span></a>    <span class="c1"># Infinity passes ordinary numeric conversion but is unsuitable for fitting.</span>
+</span><span id="load_and_clean_data-106"><a href="#load_and_clean_data-106"><span class="linenos">106</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+</span><span id="load_and_clean_data-107"><a href="#load_and_clean_data-107"><span class="linenos">107</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Dataset contains infinite values."</span><span class="p">)</span>
+</span><span id="load_and_clean_data-108"><a href="#load_and_clean_data-108"><span class="linenos">108</span></a>
+</span><span id="load_and_clean_data-109"><a href="#load_and_clean_data-109"><span class="linenos">109</span></a>    <span class="n">original_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span id="load_and_clean_data-110"><a href="#load_and_clean_data-110"><span class="linenos">110</span></a>    <span class="n">duplicate_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</span><span id="load_and_clean_data-111"><a href="#load_and_clean_data-111"><span class="linenos">111</span></a>
+</span><span id="load_and_clean_data-112"><a href="#load_and_clean_data-112"><span class="linenos">112</span></a>    <span class="c1"># Remove identical rows before splitting to limit duplicate leakage between training, validation, and test subsets.</span>
+</span><span id="load_and_clean_data-113"><a href="#load_and_clean_data-113"><span class="linenos">113</span></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="load_and_clean_data-114"><a href="#load_and_clean_data-114"><span class="linenos">114</span></a>
+</span><span id="load_and_clean_data-115"><a href="#load_and_clean_data-115"><span class="linenos">115</span></a>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+</span><span id="load_and_clean_data-116"><a href="#load_and_clean_data-116"><span class="linenos">116</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No valid observations remain after cleaning."</span><span class="p">)</span>
+</span><span id="load_and_clean_data-117"><a href="#load_and_clean_data-117"><span class="linenos">117</span></a>
+</span><span id="load_and_clean_data-118"><a href="#load_and_clean_data-118"><span class="linenos">118</span></a>    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">original_samples</span><span class="p">,</span> <span class="n">duplicate_count</span><span class="p">,</span> <span class="n">missing_values</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Load and validate the power plant dataset before model training.</p>
+            <div class="docstring"><p>Load, check, and clean the power plant dataset before model development.</p>
+
+<p>The dataset must contain four input features (AT, V, AP, RH) and the
+target (PE). Missing, non-numeric, or infinite values are rejected rather
+than silently replaced. Exact duplicate rows are removed before splitting
+to reduce the risk of identical observations appearing in different sets.</p>
+
+<p>This function validates numerical data but does not establish whether a
+particular observation is physically realistic or within the operating
+domain of the power plant.</p>
 
 <p>Args:
-    dataset_path: Path to the Excel dataset containing AT, V, AP, RHand PE columns.</p>
+    dataset_path: Path or path-like value for the Excel workbook. 
+    The required columns are AT (°C), V (cm Hg), AP (mbar), RH (%), and PE (MW).</p>
 
 <p>Returns:
-    df: Cleaned dataset containing the required columns.
-    original_samples: Number of observations before cleaning.
-    duplicate_count: Number of duplicate observations removed.
-    missing_values: Number of missing values detected.</p>
+    df: DataFrame containing the five required columns, with duplicate rows removed and the index reset.
+    original_samples: Row count before duplicate removal.
+    duplicate_count: Number of exact duplicate rows removed.
+    missing_values: Number of missing entries found (zero for a successfully returned dataset, since missing data raises an error).</p>
 
 <p>Raises:
-    FileNotFoundError: If the dataset file does not exist.
-    ValueError: If required columns are missing, values are invalid, or no observations remain after cleaning.</p>
+    FileNotFoundError: If the dataset path does not identify a file.
+    ValueError: If required columns are missing, numeric conversion fails, missing or non-finite values occur, or no rows remain.</p>
 </div>
 
 
@@ -369,53 +496,74 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
 
     </div>
     <a class="headerlink" href="#split_dataset"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="split_dataset-90"><a href="#split_dataset-90"><span class="linenos"> 90</span></a><span class="k">def</span><span class="w"> </span><span class="nf">split_dataset</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-</span><span id="split_dataset-91"><a href="#split_dataset-91"><span class="linenos"> 91</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="split_dataset-92"><a href="#split_dataset-92"><span class="linenos"> 92</span></a><span class="sd">    Split the cleaned dataset into training, validation and testing sets.</span>
-</span><span id="split_dataset-93"><a href="#split_dataset-93"><span class="linenos"> 93</span></a>
-</span><span id="split_dataset-94"><a href="#split_dataset-94"><span class="linenos"> 94</span></a><span class="sd">    Args:</span>
-</span><span id="split_dataset-95"><a href="#split_dataset-95"><span class="linenos"> 95</span></a><span class="sd">        df: Cleaned power plant dataset containing AT, V, AP, RH and PE.</span>
-</span><span id="split_dataset-96"><a href="#split_dataset-96"><span class="linenos"> 96</span></a>
-</span><span id="split_dataset-97"><a href="#split_dataset-97"><span class="linenos"> 97</span></a><span class="sd">    Returns:</span>
-</span><span id="split_dataset-98"><a href="#split_dataset-98"><span class="linenos"> 98</span></a><span class="sd">        X_temp: Combined training and validation input features (85%).</span>
-</span><span id="split_dataset-99"><a href="#split_dataset-99"><span class="linenos"> 99</span></a><span class="sd">        X_train: Training input features (70%).</span>
-</span><span id="split_dataset-100"><a href="#split_dataset-100"><span class="linenos">100</span></a><span class="sd">        X_val: Validation input features (15%).</span>
-</span><span id="split_dataset-101"><a href="#split_dataset-101"><span class="linenos">101</span></a><span class="sd">        X_test: Testing input features (15%).</span>
-</span><span id="split_dataset-102"><a href="#split_dataset-102"><span class="linenos">102</span></a><span class="sd">        y_temp: Combined training and validation target values (85%).</span>
-</span><span id="split_dataset-103"><a href="#split_dataset-103"><span class="linenos">103</span></a><span class="sd">        y_train: Training target values (70%).</span>
-</span><span id="split_dataset-104"><a href="#split_dataset-104"><span class="linenos">104</span></a><span class="sd">        y_val: Validation target values (15%).</span>
-</span><span id="split_dataset-105"><a href="#split_dataset-105"><span class="linenos">105</span></a><span class="sd">        y_test: Testing target values (15%).</span>
-</span><span id="split_dataset-106"><a href="#split_dataset-106"><span class="linenos">106</span></a><span class="sd">    """</span>
-</span><span id="split_dataset-107"><a href="#split_dataset-107"><span class="linenos">107</span></a>    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">]]</span>
-</span><span id="split_dataset-108"><a href="#split_dataset-108"><span class="linenos">108</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"PE"</span><span class="p">]</span>
-</span><span id="split_dataset-109"><a href="#split_dataset-109"><span class="linenos">109</span></a>
-</span><span id="split_dataset-110"><a href="#split_dataset-110"><span class="linenos">110</span></a>    <span class="c1"># Reserve an independent test set before model selection.</span>
-</span><span id="split_dataset-111"><a href="#split_dataset-111"><span class="linenos">111</span></a>    <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</span><span id="split_dataset-112"><a href="#split_dataset-112"><span class="linenos">112</span></a>
-</span><span id="split_dataset-113"><a href="#split_dataset-113"><span class="linenos">113</span></a>    <span class="c1"># Use the remaining observations for training and validation.</span>
-</span><span id="split_dataset-114"><a href="#split_dataset-114"><span class="linenos">114</span></a>    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_temp</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">/</span> <span class="mf">0.85</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</span><span id="split_dataset-115"><a href="#split_dataset-115"><span class="linenos">115</span></a>
-</span><span id="split_dataset-116"><a href="#split_dataset-116"><span class="linenos">116</span></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="split_dataset-117"><a href="#split_dataset-117"><span class="linenos">117</span></a>        <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
-</span><span id="split_dataset-118"><a href="#split_dataset-118"><span class="linenos">118</span></a>        <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="n">y_test</span>
-</span><span id="split_dataset-119"><a href="#split_dataset-119"><span class="linenos">119</span></a>    <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="split_dataset-121"><a href="#split_dataset-121"><span class="linenos">121</span></a><span class="k">def</span><span class="w"> </span><span class="nf">split_dataset</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span id="split_dataset-122"><a href="#split_dataset-122"><span class="linenos">122</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="split_dataset-123"><a href="#split_dataset-123"><span class="linenos">123</span></a><span class="sd">    Create reproducible, non-overlapping training, validation, and test sets.</span>
+</span><span id="split_dataset-124"><a href="#split_dataset-124"><span class="linenos">124</span></a>
+</span><span id="split_dataset-125"><a href="#split_dataset-125"><span class="linenos">125</span></a><span class="sd">    The test set is reserved first and is not used for tuning. The remaining</span>
+</span><span id="split_dataset-126"><a href="#split_dataset-126"><span class="linenos">126</span></a><span class="sd">    observations are then divided into training and validation subsets.</span>
+</span><span id="split_dataset-127"><a href="#split_dataset-127"><span class="linenos">127</span></a><span class="sd">    The second test_size is relative to the remaining 85%, so 0.15 / 0.85</span>
+</span><span id="split_dataset-128"><a href="#split_dataset-128"><span class="linenos">128</span></a><span class="sd">    produces approximately 15% validation data overall.</span>
+</span><span id="split_dataset-129"><a href="#split_dataset-129"><span class="linenos">129</span></a>
+</span><span id="split_dataset-130"><a href="#split_dataset-130"><span class="linenos">130</span></a><span class="sd">    Args:</span>
+</span><span id="split_dataset-131"><a href="#split_dataset-131"><span class="linenos">131</span></a><span class="sd">        df: Cleaned DataFrame containing AT, V, AP, RH, and PE.</span>
+</span><span id="split_dataset-132"><a href="#split_dataset-132"><span class="linenos">132</span></a>
+</span><span id="split_dataset-133"><a href="#split_dataset-133"><span class="linenos">133</span></a><span class="sd">    Returns:</span>
+</span><span id="split_dataset-134"><a href="#split_dataset-134"><span class="linenos">134</span></a><span class="sd">        X_temp: Combined training and validation input features (~85%).</span>
+</span><span id="split_dataset-135"><a href="#split_dataset-135"><span class="linenos">135</span></a><span class="sd">        X_train: Training input features (~70%).</span>
+</span><span id="split_dataset-136"><a href="#split_dataset-136"><span class="linenos">136</span></a><span class="sd">        X_val: Validation input features (~15%).</span>
+</span><span id="split_dataset-137"><a href="#split_dataset-137"><span class="linenos">137</span></a><span class="sd">        X_test: Independent test input features (~15%).</span>
+</span><span id="split_dataset-138"><a href="#split_dataset-138"><span class="linenos">138</span></a><span class="sd">        y_temp: Combined training and validation PE values (~85%).</span>
+</span><span id="split_dataset-139"><a href="#split_dataset-139"><span class="linenos">139</span></a><span class="sd">        y_train: Training PE values (~70%).</span>
+</span><span id="split_dataset-140"><a href="#split_dataset-140"><span class="linenos">140</span></a><span class="sd">        y_val: Validation PE values (~15%).</span>
+</span><span id="split_dataset-141"><a href="#split_dataset-141"><span class="linenos">141</span></a><span class="sd">        y_test: Independent test PE values (~15%).</span>
+</span><span id="split_dataset-142"><a href="#split_dataset-142"><span class="linenos">142</span></a>
+</span><span id="split_dataset-143"><a href="#split_dataset-143"><span class="linenos">143</span></a><span class="sd">    Notes:</span>
+</span><span id="split_dataset-144"><a href="#split_dataset-144"><span class="linenos">144</span></a><span class="sd">        random_state=42 makes the split reproducible for the same input data</span>
+</span><span id="split_dataset-145"><a href="#split_dataset-145"><span class="linenos">145</span></a><span class="sd">        and software environment. This is a random, not chronological, split.</span>
+</span><span id="split_dataset-146"><a href="#split_dataset-146"><span class="linenos">146</span></a><span class="sd">    """</span>
+</span><span id="split_dataset-147"><a href="#split_dataset-147"><span class="linenos">147</span></a>    <span class="c1"># The predictors are measured inputs; PE is the output to be estimated.</span>
+</span><span id="split_dataset-148"><a href="#split_dataset-148"><span class="linenos">148</span></a>    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"AT"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"AP"</span><span class="p">,</span> <span class="s2">"RH"</span><span class="p">]]</span>
+</span><span id="split_dataset-149"><a href="#split_dataset-149"><span class="linenos">149</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"PE"</span><span class="p">]</span>
+</span><span id="split_dataset-150"><a href="#split_dataset-150"><span class="linenos">150</span></a>
+</span><span id="split_dataset-151"><a href="#split_dataset-151"><span class="linenos">151</span></a>    <span class="c1"># Reserve the untouched 15% test set before any model selection.</span>
+</span><span id="split_dataset-152"><a href="#split_dataset-152"><span class="linenos">152</span></a>    <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="split_dataset-153"><a href="#split_dataset-153"><span class="linenos">153</span></a>
+</span><span id="split_dataset-154"><a href="#split_dataset-154"><span class="linenos">154</span></a>    <span class="c1"># Allocate 15% of the original dataset to validation and 70% to training.</span>
+</span><span id="split_dataset-155"><a href="#split_dataset-155"><span class="linenos">155</span></a>    <span class="c1"># The denominator accounts for the 15% already held out for final testing.</span>
+</span><span id="split_dataset-156"><a href="#split_dataset-156"><span class="linenos">156</span></a>    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_temp</span><span class="p">,</span> <span class="n">y_temp</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">/</span> <span class="mf">0.85</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="split_dataset-157"><a href="#split_dataset-157"><span class="linenos">157</span></a>
+</span><span id="split_dataset-158"><a href="#split_dataset-158"><span class="linenos">158</span></a>    <span class="c1"># Returning X_temp/y_temp permits a final refit on the full 85% development subset after hyperparameters have been chosen using validation data.</span>
+</span><span id="split_dataset-159"><a href="#split_dataset-159"><span class="linenos">159</span></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="split_dataset-160"><a href="#split_dataset-160"><span class="linenos">160</span></a>        <span class="n">X_temp</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+</span><span id="split_dataset-161"><a href="#split_dataset-161"><span class="linenos">161</span></a>        <span class="n">y_temp</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="n">y_test</span>
+</span><span id="split_dataset-162"><a href="#split_dataset-162"><span class="linenos">162</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Split the cleaned dataset into training, validation and testing sets.</p>
+            <div class="docstring"><p>Create reproducible, non-overlapping training, validation, and test sets.</p>
+
+<p>The test set is reserved first and is not used for tuning. The remaining
+observations are then divided into training and validation subsets.
+The second test_size is relative to the remaining 85%, so 0.15 / 0.85
+produces approximately 15% validation data overall.</p>
 
 <p>Args:
-    df: Cleaned power plant dataset containing AT, V, AP, RH and PE.</p>
+    df: Cleaned DataFrame containing AT, V, AP, RH, and PE.</p>
 
 <p>Returns:
-    X_temp: Combined training and validation input features (85%).
-    X_train: Training input features (70%).
-    X_val: Validation input features (15%).
-    X_test: Testing input features (15%).
-    y_temp: Combined training and validation target values (85%).
-    y_train: Training target values (70%).
-    y_val: Validation target values (15%).
-    y_test: Testing target values (15%).</p>
+    X_temp: Combined training and validation input features (~85%).
+    X_train: Training input features (~70%).
+    X_val: Validation input features (~15%).
+    X_test: Independent test input features (~15%).
+    y_temp: Combined training and validation PE values (~85%).
+    y_train: Training PE values (~70%).
+    y_val: Validation PE values (~15%).
+    y_test: Independent test PE values (~15%).</p>
+
+<p>Notes:
+    random_state=42 makes the split reproducible for the same input data
+    and software environment. This is a random, not chronological, split.</p>
 </div>
 
 
@@ -431,37 +579,49 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
 
     </div>
     <a class="headerlink" href="#evaluate_model"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="evaluate_model-121"><a href="#evaluate_model-121"><span class="linenos">121</span></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
-</span><span id="evaluate_model-122"><a href="#evaluate_model-122"><span class="linenos">122</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="evaluate_model-123"><a href="#evaluate_model-123"><span class="linenos">123</span></a><span class="sd">    Evaluate regression accuracy using actual and predicted power output.</span>
-</span><span id="evaluate_model-124"><a href="#evaluate_model-124"><span class="linenos">124</span></a>
-</span><span id="evaluate_model-125"><a href="#evaluate_model-125"><span class="linenos">125</span></a><span class="sd">    Args:</span>
-</span><span id="evaluate_model-126"><a href="#evaluate_model-126"><span class="linenos">126</span></a><span class="sd">        y_true: Actual electrical power output values (MW).</span>
-</span><span id="evaluate_model-127"><a href="#evaluate_model-127"><span class="linenos">127</span></a><span class="sd">        y_pred: Predicted electrical power output values (MW).</span>
-</span><span id="evaluate_model-128"><a href="#evaluate_model-128"><span class="linenos">128</span></a>
-</span><span id="evaluate_model-129"><a href="#evaluate_model-129"><span class="linenos">129</span></a><span class="sd">    Returns:</span>
-</span><span id="evaluate_model-130"><a href="#evaluate_model-130"><span class="linenos">130</span></a><span class="sd">        mae: Mean Absolute Error (MW).</span>
-</span><span id="evaluate_model-131"><a href="#evaluate_model-131"><span class="linenos">131</span></a><span class="sd">        rmse: Root Mean Squared Error (MW).</span>
-</span><span id="evaluate_model-132"><a href="#evaluate_model-132"><span class="linenos">132</span></a><span class="sd">        r2: Coefficient of determination.</span>
-</span><span id="evaluate_model-133"><a href="#evaluate_model-133"><span class="linenos">133</span></a><span class="sd">    """</span>
-</span><span id="evaluate_model-134"><a href="#evaluate_model-134"><span class="linenos">134</span></a>    <span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-</span><span id="evaluate_model-135"><a href="#evaluate_model-135"><span class="linenos">135</span></a>    <span class="n">rmse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
-</span><span id="evaluate_model-136"><a href="#evaluate_model-136"><span class="linenos">136</span></a>    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-</span><span id="evaluate_model-137"><a href="#evaluate_model-137"><span class="linenos">137</span></a>
-</span><span id="evaluate_model-138"><a href="#evaluate_model-138"><span class="linenos">138</span></a>    <span class="k">return</span> <span class="n">mae</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">r2</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="evaluate_model-165"><a href="#evaluate_model-165"><span class="linenos">165</span></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+</span><span id="evaluate_model-166"><a href="#evaluate_model-166"><span class="linenos">166</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="evaluate_model-167"><a href="#evaluate_model-167"><span class="linenos">167</span></a><span class="sd">    Calculate complementary regression metrics for electrical power output.</span>
+</span><span id="evaluate_model-168"><a href="#evaluate_model-168"><span class="linenos">168</span></a>
+</span><span id="evaluate_model-169"><a href="#evaluate_model-169"><span class="linenos">169</span></a><span class="sd">    MAE describes average absolute error; RMSE penalises large errors more</span>
+</span><span id="evaluate_model-170"><a href="#evaluate_model-170"><span class="linenos">170</span></a><span class="sd">    heavily; R² measures explained variation relative to predicting the mean.</span>
+</span><span id="evaluate_model-171"><a href="#evaluate_model-171"><span class="linenos">171</span></a><span class="sd">    These metrics describe the supplied observations and do not establish</span>
+</span><span id="evaluate_model-172"><a href="#evaluate_model-172"><span class="linenos">172</span></a><span class="sd">    reliability outside the evaluated operating conditions.</span>
+</span><span id="evaluate_model-173"><a href="#evaluate_model-173"><span class="linenos">173</span></a>
+</span><span id="evaluate_model-174"><a href="#evaluate_model-174"><span class="linenos">174</span></a><span class="sd">    Args:</span>
+</span><span id="evaluate_model-175"><a href="#evaluate_model-175"><span class="linenos">175</span></a><span class="sd">        y_true: Measured electrical power output values (MW).</span>
+</span><span id="evaluate_model-176"><a href="#evaluate_model-176"><span class="linenos">176</span></a><span class="sd">        y_pred: Model-predicted electrical power output values (MW).</span>
+</span><span id="evaluate_model-177"><a href="#evaluate_model-177"><span class="linenos">177</span></a>
+</span><span id="evaluate_model-178"><a href="#evaluate_model-178"><span class="linenos">178</span></a><span class="sd">    Returns:</span>
+</span><span id="evaluate_model-179"><a href="#evaluate_model-179"><span class="linenos">179</span></a><span class="sd">        mae: Mean Absolute Error (MW).</span>
+</span><span id="evaluate_model-180"><a href="#evaluate_model-180"><span class="linenos">180</span></a><span class="sd">        rmse: Root Mean Squared Error (MW).</span>
+</span><span id="evaluate_model-181"><a href="#evaluate_model-181"><span class="linenos">181</span></a><span class="sd">        r2: Coefficient of determination (dimensionless).</span>
+</span><span id="evaluate_model-182"><a href="#evaluate_model-182"><span class="linenos">182</span></a><span class="sd">    """</span>
+</span><span id="evaluate_model-183"><a href="#evaluate_model-183"><span class="linenos">183</span></a>    <span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+</span><span id="evaluate_model-184"><a href="#evaluate_model-184"><span class="linenos">184</span></a>
+</span><span id="evaluate_model-185"><a href="#evaluate_model-185"><span class="linenos">185</span></a>    <span class="c1"># Take the square root of MSE so that RMSE is expressed in MW, not MW².</span>
+</span><span id="evaluate_model-186"><a href="#evaluate_model-186"><span class="linenos">186</span></a>    <span class="n">rmse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+</span><span id="evaluate_model-187"><a href="#evaluate_model-187"><span class="linenos">187</span></a>    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+</span><span id="evaluate_model-188"><a href="#evaluate_model-188"><span class="linenos">188</span></a>
+</span><span id="evaluate_model-189"><a href="#evaluate_model-189"><span class="linenos">189</span></a>    <span class="k">return</span> <span class="n">mae</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">r2</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Evaluate regression accuracy using actual and predicted power output.</p>
+            <div class="docstring"><p>Calculate complementary regression metrics for electrical power output.</p>
+
+<p>MAE describes average absolute error; RMSE penalises large errors more
+heavily; R² measures explained variation relative to predicting the mean.
+These metrics describe the supplied observations and do not establish
+reliability outside the evaluated operating conditions.</p>
 
 <p>Args:
-    y_true: Actual electrical power output values (MW).
-    y_pred: Predicted electrical power output values (MW).</p>
+    y_true: Measured electrical power output values (MW).
+    y_pred: Model-predicted electrical power output values (MW).</p>
 
 <p>Returns:
     mae: Mean Absolute Error (MW).
     rmse: Root Mean Squared Error (MW).
-    r2: Coefficient of determination.</p>
+    r2: Coefficient of determination (dimensionless).</p>
 </div>
 
 
@@ -477,40 +637,59 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
 
     </div>
     <a class="headerlink" href="#make_svr"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="make_svr-140"><a href="#make_svr-140"><span class="linenos">140</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_svr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
-</span><span id="make_svr-141"><a href="#make_svr-141"><span class="linenos">141</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="make_svr-142"><a href="#make_svr-142"><span class="linenos">142</span></a><span class="sd">    Create an RBF Support Vector Regression model.</span>
-</span><span id="make_svr-143"><a href="#make_svr-143"><span class="linenos">143</span></a>
-</span><span id="make_svr-144"><a href="#make_svr-144"><span class="linenos">144</span></a><span class="sd">    Feature standardisation is included because the RBF kernel depends on distances between observations.</span>
-</span><span id="make_svr-145"><a href="#make_svr-145"><span class="linenos">145</span></a>
-</span><span id="make_svr-146"><a href="#make_svr-146"><span class="linenos">146</span></a><span class="sd">    Args:</span>
-</span><span id="make_svr-147"><a href="#make_svr-147"><span class="linenos">147</span></a><span class="sd">        c: Regularisation parameter controlling the penalty for errors.</span>
-</span><span id="make_svr-148"><a href="#make_svr-148"><span class="linenos">148</span></a><span class="sd">        epsilon: Width of the epsilon-insensitive error region.</span>
-</span><span id="make_svr-149"><a href="#make_svr-149"><span class="linenos">149</span></a><span class="sd">        gamma: RBF kernel coefficient controlling model sensitivity.</span>
-</span><span id="make_svr-150"><a href="#make_svr-150"><span class="linenos">150</span></a>
-</span><span id="make_svr-151"><a href="#make_svr-151"><span class="linenos">151</span></a><span class="sd">    Returns:</span>
-</span><span id="make_svr-152"><a href="#make_svr-152"><span class="linenos">152</span></a><span class="sd">        svr_model: Pipeline containing a StandardScaler and SVR.</span>
-</span><span id="make_svr-153"><a href="#make_svr-153"><span class="linenos">153</span></a><span class="sd">    """</span>
-</span><span id="make_svr-154"><a href="#make_svr-154"><span class="linenos">154</span></a>    <span class="n">svr_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
-</span><span id="make_svr-155"><a href="#make_svr-155"><span class="linenos">155</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
-</span><span id="make_svr-156"><a href="#make_svr-156"><span class="linenos">156</span></a>        <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span>
-</span><span id="make_svr-157"><a href="#make_svr-157"><span class="linenos">157</span></a>    <span class="p">)</span>
-</span><span id="make_svr-158"><a href="#make_svr-158"><span class="linenos">158</span></a>
-</span><span id="make_svr-159"><a href="#make_svr-159"><span class="linenos">159</span></a>    <span class="k">return</span> <span class="n">svr_model</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="make_svr-192"><a href="#make_svr-192"><span class="linenos">192</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_svr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+</span><span id="make_svr-193"><a href="#make_svr-193"><span class="linenos">193</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="make_svr-194"><a href="#make_svr-194"><span class="linenos">194</span></a><span class="sd">    Construct a StandardScaler + RBF Support Vector Regression pipeline.</span>
+</span><span id="make_svr-195"><a href="#make_svr-195"><span class="linenos">195</span></a>
+</span><span id="make_svr-196"><a href="#make_svr-196"><span class="linenos">196</span></a><span class="sd">    The RBF kernel compares distances between input observations. Scaling</span>
+</span><span id="make_svr-197"><a href="#make_svr-197"><span class="linenos">197</span></a><span class="sd">    prevents variables with larger numerical ranges from dominating these</span>
+</span><span id="make_svr-198"><a href="#make_svr-198"><span class="linenos">198</span></a><span class="sd">    distances. The pipeline fits its scaler on whichever dataset is passed</span>
+</span><span id="make_svr-199"><a href="#make_svr-199"><span class="linenos">199</span></a><span class="sd">    to .fit(), preventing validation/test leakage during model tuning.</span>
+</span><span id="make_svr-200"><a href="#make_svr-200"><span class="linenos">200</span></a>
+</span><span id="make_svr-201"><a href="#make_svr-201"><span class="linenos">201</span></a><span class="sd">    Args:</span>
+</span><span id="make_svr-202"><a href="#make_svr-202"><span class="linenos">202</span></a><span class="sd">        c: Positive regularisation parameter controlling the penalty for</span>
+</span><span id="make_svr-203"><a href="#make_svr-203"><span class="linenos">203</span></a><span class="sd">            predictions outside the epsilon-insensitive region.</span>
+</span><span id="make_svr-204"><a href="#make_svr-204"><span class="linenos">204</span></a><span class="sd">        epsilon: Width of the error-insensitive region in target units (MW).</span>
+</span><span id="make_svr-205"><a href="#make_svr-205"><span class="linenos">205</span></a><span class="sd">        gamma: RBF kernel coefficient, supplied as a number or 'scale'.</span>
+</span><span id="make_svr-206"><a href="#make_svr-206"><span class="linenos">206</span></a>
+</span><span id="make_svr-207"><a href="#make_svr-207"><span class="linenos">207</span></a><span class="sd">    Returns:</span>
+</span><span id="make_svr-208"><a href="#make_svr-208"><span class="linenos">208</span></a><span class="sd">        svr_model: Unfitted pipeline containing StandardScaler and RBF SVR.</span>
+</span><span id="make_svr-209"><a href="#make_svr-209"><span class="linenos">209</span></a>
+</span><span id="make_svr-210"><a href="#make_svr-210"><span class="linenos">210</span></a><span class="sd">    Notes:</span>
+</span><span id="make_svr-211"><a href="#make_svr-211"><span class="linenos">211</span></a><span class="sd">        Model fitting and hyperparameter selection take place in main.py.</span>
+</span><span id="make_svr-212"><a href="#make_svr-212"><span class="linenos">212</span></a><span class="sd">        Larger epsilon values can reduce the number of support vectors, but</span>
+</span><span id="make_svr-213"><a href="#make_svr-213"><span class="linenos">213</span></a><span class="sd">        their effect on accuracy must be assessed using validation data.</span>
+</span><span id="make_svr-214"><a href="#make_svr-214"><span class="linenos">214</span></a><span class="sd">    """</span>
+</span><span id="make_svr-215"><a href="#make_svr-215"><span class="linenos">215</span></a>    <span class="c1"># Place scaling in the pipeline so each candidate learns its own scaling parameters exclusively from the observations used to fit that candidate.</span>
+</span><span id="make_svr-216"><a href="#make_svr-216"><span class="linenos">216</span></a>    <span class="n">svr_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+</span><span id="make_svr-217"><a href="#make_svr-217"><span class="linenos">217</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
+</span><span id="make_svr-218"><a href="#make_svr-218"><span class="linenos">218</span></a>        <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span>
+</span><span id="make_svr-219"><a href="#make_svr-219"><span class="linenos">219</span></a>    <span class="p">)</span>
+</span><span id="make_svr-220"><a href="#make_svr-220"><span class="linenos">220</span></a>
+</span><span id="make_svr-221"><a href="#make_svr-221"><span class="linenos">221</span></a>    <span class="k">return</span> <span class="n">svr_model</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Create an RBF Support Vector Regression model.</p>
+            <div class="docstring"><p>Construct a StandardScaler + RBF Support Vector Regression pipeline.</p>
 
-<p>Feature standardisation is included because the RBF kernel depends on distances between observations.</p>
+<p>The RBF kernel compares distances between input observations. Scaling
+prevents variables with larger numerical ranges from dominating these
+distances. The pipeline fits its scaler on whichever dataset is passed
+to .fit(), preventing validation/test leakage during model tuning.</p>
 
 <p>Args:
-    c: Regularisation parameter controlling the penalty for errors.
-    epsilon: Width of the epsilon-insensitive error region.
-    gamma: RBF kernel coefficient controlling model sensitivity.</p>
+    c: Positive regularisation parameter controlling the penalty for
+        predictions outside the epsilon-insensitive region.
+    epsilon: Width of the error-insensitive region in target units (MW).
+    gamma: RBF kernel coefficient, supplied as a number or 'scale'.</p>
 
 <p>Returns:
-    svr_model: Pipeline containing a StandardScaler and SVR.</p>
+    svr_model: Unfitted pipeline containing StandardScaler and RBF SVR.</p>
+
+<p>Notes:
+    Model fitting and hyperparameter selection take place in main.py.
+    Larger epsilon values can reduce the number of support vectors, but
+    their effect on accuracy must be assessed using validation data.</p>
 </div>
 
 
@@ -526,52 +705,260 @@ Support Vector Regression (SVR) and Artificial Neural Network (ANN) models.
 
     </div>
     <a class="headerlink" href="#make_ann"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="make_ann-161"><a href="#make_ann-161"><span class="linenos">161</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_ann</span><span class="p">(</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
-</span><span id="make_ann-162"><a href="#make_ann-162"><span class="linenos">162</span></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="make_ann-163"><a href="#make_ann-163"><span class="linenos">163</span></a><span class="sd">    Create an ANN regression model with feature standardisation.</span>
-</span><span id="make_ann-164"><a href="#make_ann-164"><span class="linenos">164</span></a>
-</span><span id="make_ann-165"><a href="#make_ann-165"><span class="linenos">165</span></a><span class="sd">    Args:</span>
-</span><span id="make_ann-166"><a href="#make_ann-166"><span class="linenos">166</span></a><span class="sd">        hidden_layers: Tuple specifying neurons in each hidden layer.</span>
-</span><span id="make_ann-167"><a href="#make_ann-167"><span class="linenos">167</span></a><span class="sd">        alpha: L2 regularisation parameter used during ANN training.</span>
-</span><span id="make_ann-168"><a href="#make_ann-168"><span class="linenos">168</span></a><span class="sd">        learning_rate: Initial learning rate for the Adam optimiser.</span>
-</span><span id="make_ann-169"><a href="#make_ann-169"><span class="linenos">169</span></a>
-</span><span id="make_ann-170"><a href="#make_ann-170"><span class="linenos">170</span></a><span class="sd">    Returns:</span>
-</span><span id="make_ann-171"><a href="#make_ann-171"><span class="linenos">171</span></a><span class="sd">        ann_model: Pipeline containing a StandardScaler and MLPRegressor.</span>
-</span><span id="make_ann-172"><a href="#make_ann-172"><span class="linenos">172</span></a><span class="sd">    """</span>
-</span><span id="make_ann-173"><a href="#make_ann-173"><span class="linenos">173</span></a>    <span class="n">ann_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
-</span><span id="make_ann-174"><a href="#make_ann-174"><span class="linenos">174</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
-</span><span id="make_ann-175"><a href="#make_ann-175"><span class="linenos">175</span></a>        <span class="n">MLPRegressor</span><span class="p">(</span>
-</span><span id="make_ann-176"><a href="#make_ann-176"><span class="linenos">176</span></a>            <span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="n">hidden_layers</span><span class="p">,</span>
-</span><span id="make_ann-177"><a href="#make_ann-177"><span class="linenos">177</span></a>            <span class="n">activation</span><span class="o">=</span><span class="s2">"relu"</span><span class="p">,</span>
-</span><span id="make_ann-178"><a href="#make_ann-178"><span class="linenos">178</span></a>            <span class="n">solver</span><span class="o">=</span><span class="s2">"adam"</span><span class="p">,</span>
-</span><span id="make_ann-179"><a href="#make_ann-179"><span class="linenos">179</span></a>            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
-</span><span id="make_ann-180"><a href="#make_ann-180"><span class="linenos">180</span></a>            <span class="n">learning_rate_init</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
-</span><span id="make_ann-181"><a href="#make_ann-181"><span class="linenos">181</span></a>            <span class="n">max_iter</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
-</span><span id="make_ann-182"><a href="#make_ann-182"><span class="linenos">182</span></a>            <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="make_ann-183"><a href="#make_ann-183"><span class="linenos">183</span></a>            <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
-</span><span id="make_ann-184"><a href="#make_ann-184"><span class="linenos">184</span></a>            <span class="n">n_iter_no_change</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
-</span><span id="make_ann-185"><a href="#make_ann-185"><span class="linenos">185</span></a>            <span class="n">tol</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span>
-</span><span id="make_ann-186"><a href="#make_ann-186"><span class="linenos">186</span></a>            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
-</span><span id="make_ann-187"><a href="#make_ann-187"><span class="linenos">187</span></a>        <span class="p">)</span>
-</span><span id="make_ann-188"><a href="#make_ann-188"><span class="linenos">188</span></a>    <span class="p">)</span>
-</span><span id="make_ann-189"><a href="#make_ann-189"><span class="linenos">189</span></a>
-</span><span id="make_ann-190"><a href="#make_ann-190"><span class="linenos">190</span></a>    <span class="k">return</span> <span class="n">ann_model</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="make_ann-224"><a href="#make_ann-224"><span class="linenos">224</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_ann</span><span class="p">(</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
+</span><span id="make_ann-225"><a href="#make_ann-225"><span class="linenos">225</span></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="make_ann-226"><a href="#make_ann-226"><span class="linenos">226</span></a><span class="sd">    Construct a scaled feedforward neural network regression pipeline.</span>
+</span><span id="make_ann-227"><a href="#make_ann-227"><span class="linenos">227</span></a>
+</span><span id="make_ann-228"><a href="#make_ann-228"><span class="linenos">228</span></a><span class="sd">    The ANN uses ReLU activations and Adam optimisation. Standardisation helps</span>
+</span><span id="make_ann-229"><a href="#make_ann-229"><span class="linenos">229</span></a><span class="sd">    gradient-based training, while L2 regularisation and early stopping help</span>
+</span><span id="make_ann-230"><a href="#make_ann-230"><span class="linenos">230</span></a><span class="sd">    limit overfitting. The random seed fixes the ANN initialisation and its</span>
+</span><span id="make_ann-231"><a href="#make_ann-231"><span class="linenos">231</span></a><span class="sd">    internal validation split for reproducibility.</span>
+</span><span id="make_ann-232"><a href="#make_ann-232"><span class="linenos">232</span></a>
+</span><span id="make_ann-233"><a href="#make_ann-233"><span class="linenos">233</span></a><span class="sd">    Args:</span>
+</span><span id="make_ann-234"><a href="#make_ann-234"><span class="linenos">234</span></a><span class="sd">        hidden_layers: Tuple giving the number of neurons in each hidden layer, e.g. (50, 25) for two hidden layers.</span>
+</span><span id="make_ann-235"><a href="#make_ann-235"><span class="linenos">235</span></a><span class="sd">        alpha: L2 regularisation strength; larger values penalise large weights more strongly.</span>
+</span><span id="make_ann-236"><a href="#make_ann-236"><span class="linenos">236</span></a><span class="sd">        learning_rate: Initial Adam learning rate, passed as learning_rate_init to MLPRegressor.</span>
+</span><span id="make_ann-237"><a href="#make_ann-237"><span class="linenos">237</span></a>
+</span><span id="make_ann-238"><a href="#make_ann-238"><span class="linenos">238</span></a><span class="sd">    Returns:</span>
+</span><span id="make_ann-239"><a href="#make_ann-239"><span class="linenos">239</span></a><span class="sd">        ann_model: Unfitted pipeline containing StandardScaler and MLPRegressor.</span>
+</span><span id="make_ann-240"><a href="#make_ann-240"><span class="linenos">240</span></a>
+</span><span id="make_ann-241"><a href="#make_ann-241"><span class="linenos">241</span></a><span class="sd">    Notes:</span>
+</span><span id="make_ann-242"><a href="#make_ann-242"><span class="linenos">242</span></a><span class="sd">        Early stopping reserves 15% of the data passed to .fit() for</span>
+</span><span id="make_ann-243"><a href="#make_ann-243"><span class="linenos">243</span></a><span class="sd">        internal training monitoring. This differs from the separate 15%</span>
+</span><span id="make_ann-244"><a href="#make_ann-244"><span class="linenos">244</span></a><span class="sd">        validation subset used in main.py for comparing configurations.</span>
+</span><span id="make_ann-245"><a href="#make_ann-245"><span class="linenos">245</span></a><span class="sd">        Training stops after sufficient lack of improvement or after the</span>
+</span><span id="make_ann-246"><a href="#make_ann-246"><span class="linenos">246</span></a><span class="sd">        maximum of 2,500 iterations; the actual iteration count may vary.</span>
+</span><span id="make_ann-247"><a href="#make_ann-247"><span class="linenos">247</span></a><span class="sd">    """</span>
+</span><span id="make_ann-248"><a href="#make_ann-248"><span class="linenos">248</span></a>    <span class="c1"># Keep feature standardisation inside the pipeline to avoid fitting a scaler on validation or test data during model selection.</span>
+</span><span id="make_ann-249"><a href="#make_ann-249"><span class="linenos">249</span></a>    <span class="n">ann_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+</span><span id="make_ann-250"><a href="#make_ann-250"><span class="linenos">250</span></a>        <span class="n">StandardScaler</span><span class="p">(),</span>
+</span><span id="make_ann-251"><a href="#make_ann-251"><span class="linenos">251</span></a>        <span class="n">MLPRegressor</span><span class="p">(</span>
+</span><span id="make_ann-252"><a href="#make_ann-252"><span class="linenos">252</span></a>            <span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="n">hidden_layers</span><span class="p">,</span>
+</span><span id="make_ann-253"><a href="#make_ann-253"><span class="linenos">253</span></a>            <span class="n">activation</span><span class="o">=</span><span class="s2">"relu"</span><span class="p">,</span>
+</span><span id="make_ann-254"><a href="#make_ann-254"><span class="linenos">254</span></a>            <span class="n">solver</span><span class="o">=</span><span class="s2">"adam"</span><span class="p">,</span>
+</span><span id="make_ann-255"><a href="#make_ann-255"><span class="linenos">255</span></a>            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+</span><span id="make_ann-256"><a href="#make_ann-256"><span class="linenos">256</span></a>            <span class="n">learning_rate_init</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
+</span><span id="make_ann-257"><a href="#make_ann-257"><span class="linenos">257</span></a>            <span class="n">max_iter</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+</span><span id="make_ann-258"><a href="#make_ann-258"><span class="linenos">258</span></a>            <span class="c1"># Reserve part of each fit's data for early-stopping monitoring.</span>
+</span><span id="make_ann-259"><a href="#make_ann-259"><span class="linenos">259</span></a>            <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="make_ann-260"><a href="#make_ann-260"><span class="linenos">260</span></a>            <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+</span><span id="make_ann-261"><a href="#make_ann-261"><span class="linenos">261</span></a>            <span class="c1"># Stop if the monitored score does not improve sufficiently.</span>
+</span><span id="make_ann-262"><a href="#make_ann-262"><span class="linenos">262</span></a>            <span class="n">n_iter_no_change</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
+</span><span id="make_ann-263"><a href="#make_ann-263"><span class="linenos">263</span></a>            <span class="n">tol</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span>
+</span><span id="make_ann-264"><a href="#make_ann-264"><span class="linenos">264</span></a>            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="make_ann-265"><a href="#make_ann-265"><span class="linenos">265</span></a>        <span class="p">)</span>
+</span><span id="make_ann-266"><a href="#make_ann-266"><span class="linenos">266</span></a>    <span class="p">)</span>
+</span><span id="make_ann-267"><a href="#make_ann-267"><span class="linenos">267</span></a>
+</span><span id="make_ann-268"><a href="#make_ann-268"><span class="linenos">268</span></a>    <span class="k">return</span> <span class="n">ann_model</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Create an ANN regression model with feature standardisation.</p>
+            <div class="docstring"><p>Construct a scaled feedforward neural network regression pipeline.</p>
+
+<p>The ANN uses ReLU activations and Adam optimisation. Standardisation helps
+gradient-based training, while L2 regularisation and early stopping help
+limit overfitting. The random seed fixes the ANN initialisation and its
+internal validation split for reproducibility.</p>
 
 <p>Args:
-    hidden_layers: Tuple specifying neurons in each hidden layer.
-    alpha: L2 regularisation parameter used during ANN training.
-    learning_rate: Initial learning rate for the Adam optimiser.</p>
+    hidden_layers: Tuple giving the number of neurons in each hidden layer, e.g. (50, 25) for two hidden layers.
+    alpha: L2 regularisation strength; larger values penalise large weights more strongly.
+    learning_rate: Initial Adam learning rate, passed as learning_rate_init to MLPRegressor.</p>
 
 <p>Returns:
-    ann_model: Pipeline containing a StandardScaler and MLPRegressor.</p>
+    ann_model: Unfitted pipeline containing StandardScaler and MLPRegressor.</p>
+
+<p>Notes:
+    Early stopping reserves 15% of the data passed to .fit() for
+    internal training monitoring. This differs from the separate 15%
+    validation subset used in main.py for comparing configurations.
+    Training stops after sufficient lack of improvement or after the
+    maximum of 2,500 iterations; the actual iteration count may vary.</p>
 </div>
 
 
                 </section>
     </main>
-</body>
+<script>
+    function escapeHTML(html) {
+        return document.createElement('div').appendChild(document.createTextNode(html)).parentNode.innerHTML;
+    }
+
+    const originalContent = document.querySelector("main.pdoc");
+    let currentContent = originalContent;
+
+    function setContent(innerHTML) {
+        let elem;
+        if (innerHTML) {
+            elem = document.createElement("main");
+            elem.classList.add("pdoc");
+            elem.innerHTML = innerHTML;
+        } else {
+            elem = originalContent;
+        }
+        if (currentContent !== elem) {
+            currentContent.replaceWith(elem);
+            currentContent = elem;
+        }
+    }
+
+    function getSearchTerm() {
+        return (new URL(window.location)).searchParams.get("search");
+    }
+
+    const searchBox = document.querySelector(".pdoc input[type=search]");
+    searchBox.addEventListener("input", function () {
+        let url = new URL(window.location);
+        if (searchBox.value.trim()) {
+            url.hash = "";
+            url.searchParams.set("search", searchBox.value);
+        } else {
+            url.searchParams.delete("search");
+        }
+        history.replaceState("", "", url.toString());
+        onInput();
+    });
+    window.addEventListener("popstate", onInput);
+
+
+    let search, searchErr;
+
+    async function initialize() {
+        try {
+            search = await new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.type = "text/javascript";
+                script.async = true;
+                script.onload = () => resolve(window.pdocSearch);
+                script.onerror = (e) => reject(e);
+                script.src = "search.js";
+                document.getElementsByTagName("head")[0].appendChild(script);
+            });
+        } catch (e) {
+            console.error("Cannot fetch pdoc search index");
+            searchErr = "Cannot fetch search index.";
+        }
+        onInput();
+
+        document.querySelector("nav.pdoc").addEventListener("click", e => {
+            if (e.target.hash) {
+                searchBox.value = "";
+                searchBox.dispatchEvent(new Event("input"));
+            }
+        });
+    }
+
+    function onInput() {
+        setContent((() => {
+            const term = getSearchTerm();
+            if (!term) {
+                return null
+            }
+            if (searchErr) {
+                return `<h3>Error: ${searchErr}</h3>`
+            }
+            if (!search) {
+                return "<h3>Searching...</h3>"
+            }
+
+            window.scrollTo({top: 0, left: 0, behavior: 'auto'});
+
+            const results = search(term);
+
+            let html;
+            if (results.length === 0) {
+                html = `No search results for '${escapeHTML(term)}'.`
+            } else {
+                html = `<h4>${results.length} search result${results.length > 1 ? "s" : ""} for '${escapeHTML(term)}'.</h4>`;
+            }
+            for (let result of results.slice(0, 10)) {
+                let doc = result.doc;
+                let url = `${doc.modulename.replaceAll(".", "/")}.html`;
+                if (doc.qualname) {
+                    url += `#${doc.qualname}`;
+                }
+
+                let heading;
+                switch (result.doc.kind) {
+                    case "function":
+                        if (doc.fullname.endsWith(".__init__")) {
+                            heading = `<span class="name">${doc.fullname.replace(/\.__init__$/, "")}</span>${doc.signature}`;
+                        } else {
+                            heading = `<span class="def">${doc.funcdef}</span> <span class="name">${doc.fullname}</span>${doc.signature}`;
+                        }
+                        break;
+                    case "class":
+                        heading = `<span class="def">class</span> <span class="name">${doc.fullname}</span>`;
+                        if (doc.bases)
+                            heading += `<wbr>(<span class="base">${doc.bases}</span>)`;
+                        heading += `:`;
+                        break;
+                    case "variable":
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        if (doc.annotation)
+                            heading += `<span class="annotation">${doc.annotation}</span>`;
+                        if (doc.default_value)
+                            heading += `<span class="default_value"> = ${doc.default_value}</span>`;
+                        break;
+                    default:
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        break;
+                }
+                html += `
+                        <section class="search-result">
+                        <a href="${url}" class="attr ${doc.kind}">${heading}</a>
+                        <div class="docstring">${doc.doc}</div>
+                        </section>
+                    `;
+
+            }
+            return html;
+        })());
+    }
+
+    if (getSearchTerm()) {
+        initialize();
+        searchBox.value = getSearchTerm();
+        onInput();
+    } else {
+        searchBox.addEventListener("focus", initialize, {once: true});
+    }
+
+    searchBox.addEventListener("keydown", e => {
+        if (["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) {
+            let focused = currentContent.querySelector(".search-result.focused");
+            if (!focused) {
+                currentContent.querySelector(".search-result").classList.add("focused");
+            } else if (
+                e.key === "ArrowDown"
+                && focused.nextElementSibling
+                && focused.nextElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.nextElementSibling.classList.add("focused");
+                focused.nextElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "ArrowUp"
+                && focused.previousElementSibling
+                && focused.previousElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.previousElementSibling.classList.add("focused");
+                focused.previousElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "Enter"
+            ) {
+                focused.querySelector("a").click();
+            }
+        }
+    });
+</script></body>
 </html>
