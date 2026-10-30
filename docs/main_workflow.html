@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>main.py - MMA3001 documentation</title>
+<style>
+:root {
+  color-scheme: light;
+  --text: #20262c;
+  --muted: #636e77;
+  --link: #176bb0;
+  --line: #d9dfe3;
+  --code-bg: #f5f6f7;
+  --sidebar-bg: #f7f7f8;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--text); background: #fff; font: 15px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.layout { display: grid; grid-template-columns: 250px minmax(0,1fr); max-width: 1500px; margin: 0 auto; }
+.sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--line); min-height: 100vh; padding: 24px 18px; position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; }
+.project { display: block; font-size: 14px; font-weight: 650; color: #333; margin-bottom: 22px; }
+.module-title { display: block; color: #26394e; font-size: 19px; font-family: Consolas, 'Liberation Mono', monospace; font-weight: 600; margin-bottom: 7px; }
+.sidebar small { display: block; color: var(--muted); font-size: 12px; }
+.sidebar h2 { margin: 25px 0 7px; padding: 0; text-transform: uppercase; letter-spacing: .04em; font-size: 11px; font-weight: 750; color: #76818c; }
+.sidebar nav a { display: block; padding: 4px 0 4px 11px; font-size: 13px; color: #425466; border-left: 2px solid transparent; line-height: 1.45; }
+.sidebar nav a:hover { border-left-color: #5a87ae; color: #165d96; text-decoration: none; }
+.sidebar .api { margin-top: 5px; font-family: Consolas, 'Liberation Mono', monospace; }
+.doc { width: 100%; max-width: 1070px; padding: 38px 60px 88px; }
+.module-header { border-bottom: 1px solid var(--line); padding-bottom: 19px; margin-bottom: 35px; }
+.module-header .eyebrow { color: var(--muted); font-size: 13px; font-family: Consolas, 'Liberation Mono', monospace; }
+h1 { margin: 8px 0 7px; font: 600 34px/1.2 Consolas, 'Liberation Mono', monospace; letter-spacing: -.035em; color: #21272e; }
+.module-header p { margin: 0 0 10px; color: #44515c; max-width: 760px; }
+.module-links { margin-top: 16px; font-size: 13px; }
+.module-links a + a:before { content: ' · '; color: #98a2ab; margin: 0 7px; }
+section { scroll-margin-top: 22px; margin: 0 0 36px; }
+.doc > section { border-bottom: 1px solid #e9ecef; padding-bottom: 26px; }
+h2 { margin: 0 0 13px; font-size: 22px; font-weight: 650; letter-spacing: -.025em; color: #26303a; }
+h3 { margin: 22px 0 7px; font-size: 16px; font-weight: 650; color: #2c3640; }
+p { margin: 9px 0 12px; }
+ul, ol { margin: 8px 0 15px; padding-left: 24px; }
+li { margin: 4px 0; }
+code, pre { font-family: Consolas, Monaco, 'Liberation Mono', monospace; font-size: .9em; }
+code { background: var(--code-bg); border-radius: 3px; padding: 1px 4px; word-break: break-word; }
+pre { padding: 13px 15px; background: var(--code-bg); border: 1px solid #e4e7e9; border-radius: 4px; overflow: auto; line-height: 1.55; font-size: 13px; }
+pre code { padding: 0; background: none; font-size: inherit; word-break: normal; }
+.tablewrap { overflow-x: auto; margin: 15px 0 20px; }
+table { border-collapse: collapse; font-size: 13px; width: 100%; }
+table thead { border-bottom: 2px solid #cbd2d8; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e3e6e9; vertical-align: top; }
+th { color: #3e4852; font-weight: 650; white-space: nowrap; }
+tr:nth-child(even) td { background: #fafafa; }
+blockquote.note { border-left: 3px solid #cdd5dd; padding: 6px 0 6px 13px; margin: 18px 0; background: transparent; color: #46525b; }
+blockquote.note strong { color: #323c45; }
+.stage { padding-bottom: 5px; }
+.stage h3 { border-bottom: 1px solid #edf0f2; padding-bottom: 5px; font-family: Consolas, 'Liberation Mono', monospace; font-size: 15px; font-weight: 600; }
+.artifact-group { padding: 0; margin-bottom: 17px; }
+.process-list { margin: 12px 0 22px; }
+.foot { font-size: 12px; color: #697783; padding-top: 16px; }
+@media (max-width: 870px) { .layout { grid-template-columns: 1fr; }.sidebar { position: static; height: auto; min-height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 14px 22px; }.sidebar nav { display: flex; flex-wrap: wrap; gap: 4px 13px; }.sidebar h2 { margin: 10px 0 5px; }.sidebar nav a { padding: 4px; }.doc { padding: 26px 24px 60px; } }
+@media print { .layout{display:block}.sidebar{display:none}.doc{padding:0;max-width:100%}section{break-inside:auto}body{font-size:11pt}a{color:inherit} }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" aria-label="Documentation navigation">
+<a class="project" href="../README.md">MMA3001 Documentation</a>
+<a href="#top" class="module-title">main.py</a>
+<small>Executable script · workflow reference</small>
+<h2>Modules</h2>
+<nav><a href="main_model_functions.html" class="api">main_model_functions</a><a href="#top" class="api">main (workflow)</a></nav>
+<h2>Contents</h2>
+<nav><a href="#execution">Execution</a>
+<a href="#interfaces">Inputs and outputs</a>
+<a href="#architecture">Architecture</a>
+<a href="#pipeline">Workflow</a>
+<a href="#parameters">Models and tuning</a>
+<a href="#verification">Verification</a>
+<a href="#performance">Performance</a>
+<a href="#checks">Engineering checks</a>
+<a href="#limitations">Limitations</a>
+<a href="#references">References</a></nav>
+</aside>
+<main class="doc" id="top">
+<header class="module-header">
+<div class="eyebrow">Module documentation</div>
+<h1>main.py</h1>
+<p>Combined Cycle Power Plant electrical output prediction: sequential analysis workflow.</p>
+<p>This page describes the executable script rather than an importable function API. The five reusable functions are documented in <a href="main_model_functions.html">main_model_functions.html</a>.</p>
+<div class="module-links"><a href="../main.py">View source</a><a href="../README.md">README</a><a href="main_model_functions.html">Helper functions</a></div>
+</header>
+<section id="execution"><h2>1. Execution &amp; environment</h2><p>Run the analysis from the repository root after installing the pinned dependencies and placing the Excel workbook under <code>data/</code>. File paths are resolved relative to the directory containing <code>main.py</code>, not to a machine-specific absolute path.</p><pre><code># Inside the project directory, with Python 3.13 available
+python -m pip install -r requirements.txt
+python main.py
+
+# Verify the generated results
+python -m pytest test_main.py -v</code></pre><p>The script starts automatically when executed, prints progress and model metrics to the terminal, writes CSV tables under <code>results/</code>, and saves visualisations under <code>figures/</code>. Running it again regenerates or overwrites the named outputs.</p><blockquote class="note"><strong>Do not generate pdoc by importing <code>main</code>.</strong> Because <code>main.py</code> has top-level executable statements, importing it can trigger dataset loading and model training. Generate helper API documentation with <code>python -m pdoc main_model_functions -o docs</code>; this separate HTML file documents the main script without importing it.</blockquote></section>
+<section id="interfaces"><h2>2. Top-level inputs &amp; outputs</h2>
+<h3 id="inputs">Input workbook and schema</h3><p><strong>Required file:</strong> <code>data/Folds5x2_pp.xlsx</code> (first worksheet); source: UCI Combined Cycle Power Plant dataset. The script operates on full-load, hourly averaged measurements. Column names must match exactly.</p>
+<div class="tablewrap"><table><thead><tr><th>Column</th><th>Meaning</th><th>Units</th><th>Recorded range</th><th>Role</th></tr></thead><tbody>
+<tr><td><code>AT</code></td><td>Ambient temperature</td><td>°C</td><td>1.81-37.11</td><td>Predictor</td></tr>
+<tr><td><code>V</code></td><td>Steam turbine exhaust vacuum</td><td>cm Hg</td><td>25.36-81.56</td><td>Predictor</td></tr>
+<tr><td><code>AP</code></td><td>Atmospheric pressure</td><td>mbar</td><td>992.89-1033.30</td><td>Predictor</td></tr>
+<tr><td><code>RH</code></td><td>Relative humidity</td><td>%</td><td>25.56-100.16</td><td>Predictor</td></tr>
+<tr><td><code>PE</code></td><td>Net electrical power output</td><td>MW</td><td>420.26-495.76</td><td>Target</td></tr>
+</tbody></table></div>
+<p><strong>Input validation:</strong> <code>load_and_clean_data()</code> checks the file, required columns, numeric conversion, missing and non-finite values; rejects invalid data by raising an exception; and removes exact duplicate rows. The supplied dataset contains 9,568 original records, 41 removed duplicates, and 9,527 remaining records. Numeric validity does not establish that a new observation is physically plausible or within the training domain.</p>
+<h3 id="artifacts">Generated files and their interpretation</h3><div class="artifact-groups"><section class="artifact-group"><h3>CSV results · <code>results/</code></h3><ul><li><code>svr_tuning_results.csv</code> - each SVR configuration, validation metrics, support vectors and timings</li><li><code>ann_tuning_results.csv</code> - ANN configuration, train/validation metrics, iterations, warnings and timings</li><li><code>model_performance_results.csv</code> - held-out test metrics and final-fit timing</li><li><code>computational_cost_analysis.csv</code> - accuracy, model operation estimates and measured inference costs</li><li><code>temperature_region_performance.csv</code> - regional MAE and RMSE, by model</li></ul></section><section class="artifact-group"><h3>Figures · <code>figures/</code></h3><ul><li><code>correlation_heatmap.png</code></li><li><code>model_rmse_comparison.png</code></li><li><code>model_actual_vs_predicted.png</code></li><li><code>model_residual_plots.png</code></li><li><code>accuracy_vs_computational_cost.png</code></li><li><code>temperature_region_rmse.png</code></li><li><code>temperature_response_check.png</code></li></ul></section></div><p>CSV files support auditing and downstream comparison; PNGs visualise correlations, model errors, efficiency trade-offs and physical plausibility. The script also prints a terminal summary, but it does not expose a new-input prediction command or save a separately deployable trained model.</p></section>
+<section id="architecture"><h2>3. Program architecture</h2><p><code>main.py</code> is responsible for coordinating the experiment and saving artifacts. Reusable operations are supplied by <code>main_model_functions.py</code>, keeping validation, model creation and input handling separate from orchestration.</p><ol class="process-list"><li><strong>Input: </strong>Excel workbook<br/><code>data/</code></li><li><strong>Preprocess: </strong>Validate, deduplicate<br/>split 70/15/15</li><li><strong>Model: </strong>MLR baseline<br/>SVR / ANN tuning</li><li><strong>Evaluate: </strong>Refit, test, time<br/>engineering checks</li><li><strong>Output: </strong>Five CSVs<br/>seven PNGs</li></ol>
+<div class="tablewrap"><table><thead><tr><th>Function (in helper module)</th><th>Responsibility in the workflow</th></tr></thead><tbody>
+<tr><td><a href="main_model_functions.html"><code>load_and_clean_data(dataset_path)</code></a></td><td>Read workbook; validate features and target; remove duplicates; return cleaned data and cleaning summary.</td></tr>
+<tr><td><a href="main_model_functions.html"><code>split_dataset(df)</code></a></td><td>Construct feature/target arrays and reproducible train, validation and test partitions.</td></tr>
+<tr><td><a href="main_model_functions.html"><code>evaluate_model(y_true, y_pred)</code></a></td><td>Calculate MAE, RMSE and R² consistently for model comparisons.</td></tr>
+<tr><td><a href="main_model_functions.html"><code>make_svr(c, epsilon, gamma)</code></a></td><td>Create an RBF-SVR regression pipeline with feature scaling.</td></tr>
+<tr><td><a href="main_model_functions.html"><code>make_ann(hidden_layers, alpha, learning_rate)</code></a></td><td>Create a scaled feedforward MLP regression pipeline with fixed training controls.</td></tr>
+</tbody></table></div><p>For exact argument and exception behaviour, follow the <a href="main_model_functions.html">generated helper-module API reference</a>. This main-script page describes the orchestration rather than duplicating those detailed docstrings.</p></section>
+<section id="pipeline"><h2>4. Ten-stage workflow</h2>
+<div class="stage"><h3>Stage 01: Dataset loading and cleaning</h3><p>Locate <code>data/Folds5x2_pp.xlsx</code>, enforce the five required fields, reject missing/non-finite or non-numeric values, remove exact duplicates and print the resulting row counts. No imputation is needed for the provided workbook.</p></div>
+<div class="stage"><h3>Stage 02: Exploratory data analysis</h3><p>Compute Pearson correlations between <code>AT</code>, <code>V</code>, <code>AP</code>, <code>RH</code> and <code>PE</code>; save an annotated heatmap to <code>figures/correlation_heatmap.png</code>. Correlations support descriptive interpretation; they do not establish causality.</p></div>
+<div class="stage"><h3>Stage 03: Reproducible dataset partition</h3><p>Use <code>random_state=42</code> to split the 9,527 cleaned observations into 6,668 training (70%), 1,429 validation (15%) and 1,430 independent test (15%) observations. The test subset is not used for fitting scalers or selecting hyperparameters.</p></div>
+<div class="stage"><h3>Stage 04: Multiple Linear Regression baseline</h3><p>Fit <code>LinearRegression</code> to the initial training observations; evaluate on validation data and inspect coefficients. MLR is the interpretable low-complexity reference against which nonlinear methods are assessed.</p></div>
+<div class="stage"><h3>Stage 05: Support Vector Regression tuning</h3><p>Evaluate 60 RBF-SVR configurations using <code>C</code>, <code>epsilon</code> and <code>gamma</code>. Standardisation occurs inside each pipeline fitted to training data. Record validation MAE, RMSE, R², fit/prediction timings and support-vector counts; choose the lowest validation RMSE.</p></div>
+<div class="stage"><h3>Stage 06: Artificial Neural Network tuning</h3><p>Evaluate 36 <code>MLPRegressor</code> configurations varying hidden-layer architecture, L2 regularisation and initial learning rate. Record training and validation metrics, training iterations, trainable parameters and convergence warnings. Select using external validation RMSE; early stopping additionally uses an internal split of fitting data.</p></div>
+<div class="stage"><h3>Stage 07: Final refitting and held-out evaluation</h3><p>Refit each selected model on 8,097 combined training and validation records and evaluate it on the same untouched 1,430-record test partition. Store final MAE, RMSE, R² and timing. Report coefficients from the <em>final</em> MLR fit, which differ slightly from the initial training-only coefficients.</p></div>
+<div class="stage"><h3>Stage 08: Final test visualisations</h3><p>Produce the RMSE comparison, actual-versus-predicted plots and predicted-versus-residual plots for all three regressors. Residuals are defined as <em>actual minus predicted</em>; unusually large residuals are retained unless independent evidence establishes a record is invalid.</p></div>
+<div class="stage"><h3>Stage 09: Accuracy-computational-cost analysis</h3><p>Measure and compare final-fit time, median inference time over 20 repeated predictions on the full test batch, architecture/parameter counts and approximate arithmetic operations per prediction. Plot test RMSE against measured prediction time.</p></div>
+<div class="stage"><h3>Stage 10: Regional performance and engineering plausibility</h3><p>Compute test errors for low, moderate and high ambient-temperature regions using training-derived temperature thresholds. Check predictions against the historical target range; then vary temperature across its training 5th-95th percentile while fixing other inputs at training medians to inspect response direction.</p></div></section>
+<section id="parameters"><h2>5. Models, tuning grids &amp; metrics</h2><div class="tablewrap"><table><thead><tr><th>Model</th><th>Configuration evaluated</th><th>Selection and fit</th></tr></thead><tbody>
+<tr><td><strong>MLR</strong></td><td>Ordinary linear regression; four predictors and intercept</td><td>Baseline, not hyperparameter-tuned</td></tr>
+<tr><td><strong>RBF SVR</strong></td><td><code>C = [1, 10, 100, 200]</code><br/><code>epsilon = [0.1, 1.0, 1.5]</code><br/><code>gamma = [0.01, 0.1, 0.3, 0.5, "scale"]</code></td><td>4 × 3 × 5 = <strong>60</strong> candidates; scaler inside pipeline; select minimum validation RMSE</td></tr>
+<tr><td><strong>ANN</strong></td><td><code>hidden = [(20,), (50,), (50,25), (75,25)]</code><br/><code>alpha = [0.0001, 0.01, 0.1]</code><br/><code>learning_rate = [0.0005, 0.001, 0.01]</code></td><td>4 × 3 × 3 = <strong>36</strong> candidates; scaler + MLP, ReLU/Adam; internal early stopping</td></tr>
+</tbody></table></div>
+<p><strong>ANN training controls:</strong> <code>max_iter=2500</code>, <code>early_stopping=True</code>, <code>validation_fraction=0.15</code>, <code>n_iter_no_change=35</code>, <code>tol=1e-5</code>, <code>random_state=42</code>. The internal early-stopping split is distinct from the external project validation set.</p>
+<p><strong>Evaluation metrics:</strong> MAE is the average absolute error (MW); RMSE is the square root of the mean squared error (MW), more sensitive to large residuals; R² measures explained variation. <strong>Validation RMSE</strong> determines hyperparameters and model selection. <strong>Test metrics</strong> are reported after configuration selection.</p>
+<div class="tablewrap"><table><thead><tr><th>Model</th><th>Selected settings</th><th>Validation RMSE</th><th>Test MAE</th><th>Test RMSE</th><th>Test R²</th></tr></thead><tbody>
+<tr><td>MLR</td><td>Linear baseline</td><td>4.6154 MW</td><td>3.6399 MW</td><td>4.6365 MW</td><td>0.9268</td></tr>
+<tr><td>ANN</td><td><code>(50,25)</code>; α 0.1; LR 0.001</td><td>4.1159 MW</td><td>3.2360 MW</td><td>4.2013 MW</td><td>0.9399</td></tr>
+<tr><td><strong>SVR</strong></td><td><code>C=200</code>, <code>epsilon=1.5</code>, <code>gamma=0.5</code></td><td><strong>3.8950 MW</strong></td><td><strong>2.8765 MW</strong></td><td><strong>3.9500 MW</strong></td><td><strong>0.9468</strong></td></tr>
+</tbody></table></div><p>The selected SVR uses 4,313 support vectors when fitted on the 70% training subset; after the final 85% refit it uses 5,207 support vectors. The ANN architecture has 1,551 trainable parameters and completed 463 iterations for the selected configuration in the observed tuning run.</p></section>
+<section id="verification"><h2>6. Verification &amp; reproducibility</h2><p>The test suite is implemented in <code>test_main.py</code>, with 12 pytest tests for helper functions and selected generated-result checks. Run <code>main.py</code> before pytest on a new clone because certain tests expect generated CSV files.</p><pre><code>python main.py
+python -m pytest test_main.py -v
+
+# Windows PowerShell: display output and overwrite the test report
+python -m pytest test_main.py -v 2&gt;&amp;1 | Tee-Object -FilePath test_report.txt</code></pre><p>Test coverage includes required columns and invalid input handling, duplicates, split integrity, metric calculations, model-building behaviour and selected output checks. A passing test suite verifies the checked program behaviour; it does not prove predictive accuracy on future plants or all engineering use cases.</p><h3>Reproduction checklist</h3><ol><li>Use Python 3.13.0 and install <code>requirements.txt</code>.</li><li>Confirm <code>data/Folds5x2_pp.xlsx</code> contains <code>AT</code>, <code>V</code>, <code>AP</code>, <code>RH</code>, <code>PE</code>.</li><li>Run <code>python main.py</code> and inspect the terminal summaries.</li><li>Confirm five CSV outputs in <code>results/</code> and seven PNGs in <code>figures/</code>.</li><li>Compare final accuracy metrics with the table above; measured runtimes are machine-dependent.</li><li>Run pytest; confirm <strong>12 passed</strong>, and save <code>test_report.txt</code> if needed.</li></ol></section>
+<section id="performance"><h2>7. Computational analysis &amp; timing</h2><p>The final script records <strong>single-fit training times</strong> and uses the <strong>median of 20 repeated test-batch predictions</strong> for inference timing. Timing repetitions occur after fitting and a warm-up prediction, and do not change model parameters or prediction metrics. Results below are from a Windows/Python 3.13.0 execution; they are not guaranteed on other hardware.</p>
+<div class="tablewrap"><table><thead><tr><th>Metric</th><th>MLR</th><th>ANN</th><th>SVR</th></tr></thead><tbody>
+<tr><td>Final fit time (s; one fit)</td><td>0.0027</td><td>5.6127</td><td>7.1010</td></tr>
+<tr><td>Test-batch inference median (s; 20 repeats)</td><td>0.0006</td><td>0.0008</td><td>0.2593</td></tr>
+<tr><td>Approximate basic arithmetic operations / observation</td><td>8</td><td>2,950</td><td>72,898</td></tr>
+</tbody></table></div>
+<p>SVR retains 5,207 support vectors in the final refit. Its estimate is <code>5,207 × (3 × 4 + 2) = 72,898</code> basic operations per observation, excluding approximately 5,207 RBF exponentials, scaling and implementation costs. ANN's 4-50-25-1 architecture has 1,475 weights plus 76 biases; its estimate <code>2 × (4×50 + 50×25 + 25×1) = 2,950</code> excludes biases, nonlinear activations and scaling. These are simplified operation estimates, not fully measured hardware FLOPs.</p><p>SVR inference was about 335 times slower than ANN using the <em>unrounded</em> observed timing measurements. Prediction time is sensitive to platform, workload and library implementation; repeating calls reduces noise but does not establish general hardware-independent latency. Training durations are single measurements.</p></section>
+<section id="checks"><h2>8. Engineering checks &amp; diagnostic interpretation</h2>
+<div class="tablewrap"><table><thead><tr><th>Check</th><th>Method</th><th>Observed evidence / interpretation</th></tr></thead><tbody>
+<tr><td>Ambient-temperature regions</td><td>Define equal-width bands from training data; compare test RMSE across bands.</td><td>SVR RMSE: low 4.5984, moderate 3.5396, high 3.9238 MW. Larger low-temperature error remains a limitation.</td></tr>
+<tr><td>Historical output domain</td><td>Count test predictions beyond the dataset PE range (420.26-495.76 MW).</td><td>SVR: 1 prediction (0.07%); ANN and MLR: 0. Outside historical range does not itself prove physical impossibility.</td></tr>
+<tr><td>Temperature response</td><td>Sweep training 5th-95th percentile of AT; hold other features at training medians.</td><td>Predicted PE decreases by 46.132 MW (SVR), 39.597 MW (ANN), 46.594 MW (MLR); zero increasing intervals observed in the sampled sweep.</td></tr>
+<tr><td>Residual inspection</td><td>Plot actual minus predicted against model predictions.</td><td>Large individual deviations remain even when aggregate RMSE is low. Do not delete unusual records without independent evidence of invalidity.</td></tr>
+</tbody></table></div><p>These checks provide engineering evidence for the investigated input domain, but they do not constitute physical simulation, extrapolation guarantees or causal inference.</p></section>
+<section id="limitations"><h2>9. Assumptions, error handling &amp; limitations</h2><ul><li><strong>Operating scope:</strong> historical, hourly averaged full-load observations from one CCPP. Other plants, future periods, part-load regimes and transients are not validated.</li><li><strong>Validation scope:</strong> a single reproducible random partition and fixed ANN seed. Alternative partitions, cross-validation and additional ANN initialisations would provide stronger stability evidence.</li><li><strong>Parameter scope:</strong> the reported configurations are the best within the investigated grids; the winning SVR <code>C</code>, <code>epsilon</code> and numeric <code>gamma</code>, and ANN <code>alpha</code>, lie at explored upper boundaries.</li><li><strong>Data validation:</strong> missing files/columns, non-numeric, missing and infinite observations are rejected. Physical out-of-domain constraints and unusual but numeric combinations are not fully enforced.</li><li><strong>Inference timing:</strong> short operations can be dominated by memory, runtime and library overhead. Measured results are not a controlled cross-platform benchmark.</li><li><strong>Intended use:</strong> offline performance estimation and evaluation only; not a production forecaster, equipment controller or safety-critical application.</li><li><strong>Data chronology:</strong> the supplied workbook does not provide the original time stamps required for true chronological testing.</li></ul><p><strong>Reproducibility limits:</strong> the fixed split and pinned dependencies support repeatable comparisons, but exact wall-clock timings vary. No model checkpoint is exported; rerun <code>main.py</code> to reconstruct fitted models and outputs.</p></section>
+<section id="references"><h2>10. Related source documentation</h2><div class="tablewrap"><table><thead><tr><th>Resource</th><th>Purpose</th></tr></thead><tbody><tr><td><a href="main_model_functions.html">main_model_functions.html</a></td><td>Generated API reference for five user-written functions, their parameters, return values and failure cases.</td></tr><tr><td><a href="../main.py">main.py</a></td><td>Executable source code and inline comments. Execute directly; do not import it to generate docs.</td></tr><tr><td><a href="../README.md">README.md</a></td><td>Project orientation, installation and reproduction instructions.</td></tr><tr><td><a href="../test_main.py">test_main.py</a> / <a href="../test_report.txt">test_report.txt</a></td><td>Automated verification code and recorded test output.</td></tr><tr><td><a href="https://archive.ics.uci.edu/dataset/294/combined+cycle+power+plant">UCI CCPP dataset</a></td><td>Source and attribution for the operating measurements.</td></tr></tbody></table></div><p>The complete project also includes the report PDF and references to the literature. Code is licensed separately from the UCI dataset, which is distributed under its own license.</p></section>
+<footer class="foot">main.py · MMA3001 Technical Documentation<br>Inputs, program flow, model configuration, output files and verification.</footer>
+</main>
+</div>
+</body>
+</html>
