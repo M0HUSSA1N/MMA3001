@@ -1,20 +1,36 @@
-
 """
-MMA3001 Project: Software Testing
+MMA3001 Project: Automated Software Testing
 
-Description:
-    This module contains automated tests for the combined cycle power
-    plant output prediction project.
-
-    The tests verify dataset structure, data cleaning, data splitting,
-    model performance results, baseline comparison, regression metrics,
-    SVR and ANN model configuration, and invalid dataset handling.
+Purpose:
+    Verify the reliability and expected behaviour of the data processing,
+    model creation and evaluation functions used in the Combined Cycle
+    Power Plant Output Prediction project.
 
 Testing Framework:
     pytest
 
+Test Coverage:
+    - Verify the required dataset columns and structure.
+    - Confirm duplicate removal and missing-value handling.
+    - Check training, validation and test set sizes and separation.
+    - Verify the existence and structure of final performance results.
+    - Confirm that SVR outperforms the MLR baseline on test RMSE.
+    - Check the accuracy of MAE, RMSE and R² calculations.
+    - Verify SVR and ANN pipeline configurations.
+    - Confirm that invalid datasets raise appropriate errors.
+    - Verify main.py syntax and the generated CSV and PNG outputs.
+
+Implementation:
+    Tests use functions imported from main_model_functions.py.
+    Dataset and result-file tests use project-relative paths.
+    Temporary Excel files are created for invalid-input tests.
+    The main workflow is checked through syntax and saved-output
+    verification without repeating computationally expensive training.
+
 Execution:
     python -m pytest test_main.py -v
+
+    Run main.py first to generate the results required by some tests.
 """
 
 from pathlib import Path
@@ -319,3 +335,57 @@ def test_non_numeric_dataset_value(tmp_path):
 
     with pytest.raises(ValueError):
         load_and_clean_data(invalid_file)
+
+# ============================================================
+# 13. Main Script and Workflow Output Verification
+# ============================================================
+
+def test_main_workflow_outputs():
+    """
+    Verify that the main script is syntactically valid and that
+    the complete analysis has produced its expected output files.
+
+    This test checks the saved outputs from a previous execution
+    without repeating the computationally expensive model tuning.
+    """
+
+    # Check that main.py can be compiled without executing it.
+    main_file = PROJECT_DIR / "main.py"
+    source = main_file.read_text(encoding="utf-8")
+    compile(source, str(main_file), "exec")
+
+    # Verify that the expected numerical results were generated.
+    expected_csv_files = [
+        "svr_tuning_results.csv",
+        "ann_tuning_results.csv",
+        "model_performance_results.csv",
+        "computational_cost_analysis.csv",
+        "temperature_region_performance.csv"
+    ]
+
+    for filename in expected_csv_files:
+        filepath = PROJECT_DIR / "results" / filename
+
+        assert filepath.is_file(), f"Missing results file: {filename}"
+        assert not pd.read_csv(filepath).empty, f"Empty results file: {filename}"
+
+    # Verify that the expected plots were generated as PNG files.
+    expected_figures = [
+        "correlation_heatmap.png",
+        "model_rmse_comparison.png",
+        "model_actual_vs_predicted.png",
+        "model_residual_plots.png",
+        "accuracy_vs_computational_cost.png",
+        "temperature_region_rmse.png",
+        "temperature_response_check.png"
+    ]
+
+    for filename in expected_figures:
+        filepath = PROJECT_DIR / "figures" / filename
+
+        assert filepath.is_file(), f"Missing figure: {filename}"
+
+        with filepath.open("rb") as file:
+            assert file.read(8) == b"\x89PNG\r\n\x1a\n", (
+                f"Invalid PNG file: {filename}"
+            )
