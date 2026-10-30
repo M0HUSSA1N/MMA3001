@@ -86,7 +86,7 @@ The script writes CSV results into `results/` and PNG figures into `figures/`. T
 Clone the repository using its HTTPS URL from GitHub (**Code → HTTPS**):
 
 ```bash
-git clone https://github.com/MOHUSSAIN/MMA3001.git
+git clone https://github.com/M0HUSSA1N/MMA3001.git
 cd MMA3001
 ```
 
